@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bet-builder
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bet-builder
+  template:
+    metadata:
+      labels:
+        app: bet-builder
+    spec:
+      serviceAccountName: bet-builder
+      containers:
+        - name: builder
+          # Replace with your actual image reference after pushing to a registry
+          image: bet-builder:latest
+          imagePullPolicy: Always
+          env:
+            - name: FDB_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: bet-builder-secrets
+                  key: FDB_API_KEY
+            - name: S3_BUCKET
+              value: "REPLACE_WITH_BUCKET_NAME"
+            - name: AWS_REGION
+              value: "eu-west-1"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+      volumes:
+        - name: config
+          configMap:
+            name: bet-builder-config

@@ -1,0 +1,96 @@
+# FIFA World Cup 2026 — Bet With Goodall
+#
+# competition_id: "WC" is the football-data.org code for the World Cup.
+#
+# Team names must match what the football-data.org API returns exactly
+# (matching is case-insensitive, so capitalisation doesn't matter).
+
+competition_id: WC
+
+# Real 2026 draw groups:
+#  A: Czechia, Mexico, South Africa, South Korea
+#  B: Bosnia-Herzegovina, Canada, Qatar, Switzerland
+#  C: Brazil, Morocco, Haiti, Scotland
+#  D: Turkey, United States, Paraguay, Australia
+#  E: Germany, Curaçao, Ivory Coast, Ecuador
+#  F: Sweden, Netherlands, Japan, Tunisia
+#  G: Belgium, Egypt, Iran, New Zealand
+#  H: Spain, Cape Verde Islands, Saudi Arabia, Uruguay
+#  I: Iraq, France, Senegal, Norway
+#  J: Argentina, Algeria, Austria, Jordan
+#  K: Congo DR, Portugal, Uzbekistan, Colombia
+#  L: England, Croatia, Ghana, Panama
+
+bets:
+  - id: bet-1
+    stake: 10.00
+    potential_return: 847.50
+    legs:
+      - group: A
+        team: Mexico
+      - group: C
+        team: Brazil
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: H
+        team: Spain
+
+  - id: bet-2
+    stake: 5.00
+    potential_return: 2340.00
+    legs:
+      - group: A
+        team: South Korea
+      - group: C
+        team: Morocco
+      - group: E
+        team: Ivory Coast
+      - group: F
+        team: Japan
+      - group: J
+        team: Argentina
+
+  - id: bet-3
+    stake: 20.00
+    potential_return: 1260.00
+    legs:
+      - group: C
+        team: Brazil
+      - group: D
+        team: Turkey
+      - group: G
+        team: Belgium
+      - group: I
+        team: France
+      - group: L
+        team: England
+
+  - id: bet-4
+    stake: 2.00
+    potential_return: 5180.00
+    legs:
+      - group: A
+        team: Mexico
+      - group: D
+        team: United States
+      - group: F
+        team: Netherlands
+      - group: H
+        team: Spain
+      - group: K
+        team: Portugal
+
+top_scorer_bets:
+  - id: tsb-1
+    player: "Kylian Mbappé"
+    team: France
+    stake: 5.00
+    potential_return: 37.50
+
+  - id: tsb-2
+    player: "Erling Haaland"
+    team: Norway
+    stake: 5.00
+    potential_return: 55.00

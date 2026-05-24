@@ -1,0 +1,31 @@
+# Edit the bets section to match your actual bets before applying.
+# Team names must match the football-data.org API exactly (case-insensitive).
+# The competition_id for the 2026 World Cup — verify at api.football-data.org
+# once the tournament is listed; "WC" is the historic code.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bet-builder-config
+  namespace: default
+data:
+  bets.yaml: |
+    competition_id: WC
+
+    bets:
+      - id: bet-1
+        stake: 10.00
+        potential_return: 847.50
+        legs:
+          - group: A
+            team: Mexico
+          - group: C
+            team: Brazil
+          - group: E
+            team: France
+
+    top_scorer_bets:
+      - id: tsb-1
+        player: "Kylian Mbappé"
+        team: France
+        stake: 5.00
+        potential_return: 37.50

@@ -1,0 +1,15 @@
+# Dependencies
+web/node_modules/
+
+# Build output
+web/dist/
+
+# Go build cache
+builder/builder
+
+# Local env files
+.env
+.env.local
+
+# OS
+.DS_Store
