@@ -1,6 +1,6 @@
 resource "aws_cloudfront_origin_access_control" "site" {
   name                              = "bet-with-goodall"
-  description                       = "OAC for bet-with-goodall S3 origin"
+  description                       = "OAC for betwithgoodall.com S3 origin"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
@@ -10,57 +10,39 @@ resource "aws_cloudfront_distribution" "site" {
   enabled             = true
   is_ipv6_enabled     = true
   default_root_object = "index.html"
-  price_class         = "PriceClass_100" # US, Canada, Europe only
+  price_class         = "PriceClass_100" # US, Canada, Europe
 
   aliases = ["betwithgoodall.com", "www.betwithgoodall.com"]
 
   origin {
     domain_name              = aws_s3_bucket.site.bucket_regional_domain_name
-    origin_id                = "s3-bet-with-goodall"
+    origin_id                = "s3-betwithgoodall"
     origin_access_control_id = aws_cloudfront_origin_access_control.site.id
   }
 
-  # Short TTL for data/ — the builder pushes new state.json frequently
+  # Default: no caching — keeps index.html and data/state.json always fresh
   default_cache_behavior {
-    target_origin_id       = "s3-bet-with-goodall"
+    target_origin_id       = "s3-betwithgoodall"
     viewer_protocol_policy = "redirect-to-https"
     compress               = true
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
+    cached_methods         = ["GET", "HEAD"]
 
-    allowed_methods = ["GET", "HEAD", "OPTIONS"]
-    cached_methods  = ["GET", "HEAD"]
-
-    forwarded_values {
-      query_string = false
-      cookies {
-        forward = "none"
-      }
-    }
-
-    min_ttl     = 0
-    default_ttl = 60  # 1 minute
-    max_ttl     = 300 # 5 minutes
+    # AWS managed: CachingDisabled
+    cache_policy_id = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
   }
 
-  # Long cache for Vite content-hashed assets (/assets/*)
+  # /assets/*: long cache — Vite content-hashes these filenames so they're safe to cache forever
   ordered_cache_behavior {
     path_pattern           = "/assets/*"
-    target_origin_id       = "s3-bet-with-goodall"
+    target_origin_id       = "s3-betwithgoodall"
     viewer_protocol_policy = "redirect-to-https"
     compress               = true
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
 
-    allowed_methods = ["GET", "HEAD"]
-    cached_methods  = ["GET", "HEAD"]
-
-    forwarded_values {
-      query_string = false
-      cookies {
-        forward = "none"
-      }
-    }
-
-    min_ttl     = 0
-    default_ttl = 86400    # 1 day
-    max_ttl     = 31536000 # 1 year
+    # AWS managed: CachingOptimized (default TTL 86400s, max 31536000s)
+    cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
   }
 
   # SPA fallback: S3 returns 403 for unknown paths → serve index.html
