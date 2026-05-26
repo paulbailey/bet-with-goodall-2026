@@ -71,9 +71,9 @@ export function BetGrid({ bets }: BetGridProps) {
                     const { fi, code } = getCountry(leg.team)
                     return (
                       <td key={g} className={`leg-cell ${STATUS_CLASS[leg.status]}`} title={leg.team}>
+                        <Flag fi={fi} className="leg-flag" />
                         <span className="leg-full">{leg.team}</span>
                         <span className="leg-short">
-                          <Flag fi={fi} className="leg-flag" />
                           <span className="leg-code">{code}</span>
                         </span>
                         <span className="leg-icon">{STATUS_LABEL[leg.status]}</span>
