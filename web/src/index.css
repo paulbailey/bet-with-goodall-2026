@@ -348,6 +348,11 @@ body {
 .top-scorers-table td.col-ts-player { text-align: left; font-weight: 600; }
 .top-scorers-table td.col-ts-team  { text-align: left; color: var(--wc-muted); font-size: 0.8rem; }
 
+@media (max-width: 768px) {
+  .top-scorers-table th.col-ts-team,
+  .top-scorers-table td.col-ts-team { display: none; }
+}
+
 .scorer-eliminated td { opacity: 0.45; }
 .scorer-eliminated td.col-ts-player::after {
   content: ' (out)';
