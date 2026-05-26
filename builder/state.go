@@ -194,6 +194,13 @@ func buildTopScorers(scorers []TopScorerEntry, groups []GroupStanding) []TopScor
 	return out
 }
 
+// notStarted returns true for statuses that mean a match hasn't kicked off yet.
+// football-data.org uses "TIMED" (kickoff confirmed) and "SCHEDULED" (date TBC);
+// both are "not started" for our purposes.
+func notStarted(status string) bool {
+	return status == "SCHEDULED" || status == "TIMED"
+}
+
 func tournamentPhase(matches []Match) string {
 	if len(matches) == 0 {
 		return "pre_tournament"
@@ -201,13 +208,13 @@ func tournamentPhase(matches []Match) string {
 
 	anyStarted, allFinished, hasKnockout := false, true, false
 	for _, m := range matches {
-		if m.Status != "SCHEDULED" {
+		if !notStarted(m.Status) {
 			anyStarted = true
 		}
 		if m.Status != "FINISHED" {
 			allFinished = false
 		}
-		if !strings.Contains(m.Stage, "GROUP") && m.Status != "SCHEDULED" {
+		if !strings.Contains(m.Stage, "GROUP") && !notStarted(m.Status) {
 			hasKnockout = true
 		}
 	}

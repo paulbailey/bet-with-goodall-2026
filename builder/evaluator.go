@@ -20,7 +20,7 @@ func nextPollInterval(matches []Match) time.Duration {
 
 	var nextKickoff time.Time
 	for _, m := range matches {
-		if m.Status != "SCHEDULED" {
+		if !notStarted(m.Status) {
 			continue
 		}
 		if nextKickoff.IsZero() || m.UtcDate.Before(nextKickoff) {
