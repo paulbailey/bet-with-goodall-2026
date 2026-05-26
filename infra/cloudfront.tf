@@ -10,7 +10,7 @@ resource "aws_cloudfront_distribution" "site" {
   enabled             = true
   is_ipv6_enabled     = true
   default_root_object = "index.html"
-  price_class         = "PriceClass_100" # US, Canada, Europe
+  price_class         = "PriceClass_All" # US, Canada, Europe
 
   aliases = ["betwithgoodall.com", "www.betwithgoodall.com"]
 
