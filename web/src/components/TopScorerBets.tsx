@@ -34,7 +34,7 @@ export function TopScorerBets({ bets }: TopScorerBetsProps) {
             </tr>
           </thead>
           <tbody>
-            {bets.map((bet, index) => {
+            {bets.map((bet) => {
               const { fi } = getCountry(bet.team)
               return (
                 <tr key={bet.id} className={`bet-row ${STATUS_CLASS[bet.status]}`}>
