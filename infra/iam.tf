@@ -46,7 +46,7 @@ data "aws_iam_policy_document" "bet_builder_assume_role" {
     condition {
       test     = "StringEquals"
       variable = "${local.oidc_issuer_hostpath}:sub"
-      values   = ["system:serviceaccount:default:bet-builder"]
+      values   = ["system:serviceaccount:bet-with-goodall:bet-builder"]
     }
   }
 }
