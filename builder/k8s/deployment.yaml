@@ -14,11 +14,26 @@ spec:
         app: bet-builder
     spec:
       serviceAccountName: bet-builder
+      volumes:
+        - name: aws-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  audience: sts.amazonaws.com
+                  expirationSeconds: 3600
+                  path: token
+        - name: config
+          configMap:
+            name: bet-builder-config
       containers:
         - name: builder
           image: ghcr.io/paulbailey/bet-with-goodall-builder:latest
           imagePullPolicy: Always
           env:
+            - name: AWS_ROLE_ARN
+              value: "arn:aws:iam::020889749910:role/bet-builder"
+            - name: AWS_WEB_IDENTITY_TOKEN_FILE
+              value: /var/run/secrets/eks.amazonaws.com/serviceaccount/token
             - name: FDB_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -29,6 +44,9 @@ spec:
             - name: AWS_REGION
               value: "eu-west-2"
           volumeMounts:
+            - name: aws-token
+              mountPath: /var/run/secrets/eks.amazonaws.com/serviceaccount
+              readOnly: true
             - name: config
               mountPath: /config
           resources:
@@ -37,7 +55,3 @@ spec:
               memory: 32Mi
             limits:
               memory: 64Mi
-      volumes:
-        - name: config
-          configMap:
-            name: bet-builder-config

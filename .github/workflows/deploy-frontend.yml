@@ -65,6 +65,7 @@ jobs:
         run: |
           aws s3 sync dist/ s3://${{ env.S3_BUCKET }}/ \
             --exclude "assets/*" \
+            --exclude "data/*" \
             --cache-control "no-cache" \
             --delete
 
