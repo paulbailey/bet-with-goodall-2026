@@ -6,7 +6,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: bet-builder-config
-  namespace: default
+  namespace: bet-with-goodall
 data:
   bets.yaml: |
     competition_id: WC

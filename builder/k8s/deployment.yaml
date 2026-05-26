@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bet-builder
-  namespace: default
+  namespace: bet-with-goodall
 spec:
   replicas: 1
   selector:
@@ -16,19 +16,18 @@ spec:
       serviceAccountName: bet-builder
       containers:
         - name: builder
-          # Replace with your actual image reference after pushing to a registry
-          image: bet-builder:latest
+          image: ghcr.io/paulbailey/bet-with-goodall-builder:latest
           imagePullPolicy: Always
           env:
             - name: FDB_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: bet-builder-secrets
+                  name: bet-builder
                   key: FDB_API_KEY
             - name: S3_BUCKET
-              value: "REPLACE_WITH_BUCKET_NAME"
+              value: "bet-with-goodall"
             - name: AWS_REGION
-              value: "eu-west-1"
+              value: "eu-west-2"
           volumeMounts:
             - name: config
               mountPath: /config
