@@ -4,7 +4,8 @@ terraform {
   cloud {
     organization = "dreamshake"
     workspaces {
-      name = "bet-with-goodall"
+      # Must match the name in the terraform-cloud-role trust policy in account_foundation
+      name = "bet-with-goodall-2026"
     }
   }
 
