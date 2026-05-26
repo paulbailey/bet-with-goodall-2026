@@ -1,7 +1,3 @@
-# Edit the bets section to match your actual bets before applying.
-# Team names must match the football-data.org API exactly (case-insensitive).
-# The competition_id for the 2026 World Cup — verify at api.football-data.org
-# once the tournament is listed; "WC" is the historic code.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -21,7 +17,56 @@ data:
           - group: C
             team: Brazil
           - group: E
+            team: Germany
+          - group: F
+            team: Netherlands
+          - group: H
+            team: Spain
+
+      - id: bet-2
+        stake: 5.00
+        potential_return: 2340.00
+        legs:
+          - group: A
+            team: South Korea
+          - group: C
+            team: Morocco
+          - group: E
+            team: Ivory Coast
+          - group: F
+            team: Japan
+          - group: J
+            team: Argentina
+
+      - id: bet-3
+        stake: 20.00
+        potential_return: 1260.00
+        legs:
+          - group: C
+            team: Brazil
+          - group: D
+            team: Turkey
+          - group: G
+            team: Belgium
+          - group: I
             team: France
+          - group: L
+            team: England
+
+      - id: bet-4
+        stake: 2.00
+        potential_return: 5180.00
+        legs:
+          - group: A
+            team: Mexico
+          - group: D
+            team: United States
+          - group: F
+            team: Netherlands
+          - group: H
+            team: Spain
+          - group: K
+            team: Portugal
 
     top_scorer_bets:
       - id: tsb-1
@@ -29,3 +74,9 @@ data:
         team: France
         stake: 5.00
         potential_return: 37.50
+
+      - id: tsb-2
+        player: "Erling Haaland"
+        team: Norway
+        stake: 5.00
+        potential_return: 55.00
