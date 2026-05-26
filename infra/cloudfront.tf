@@ -11,6 +11,7 @@ resource "aws_cloudfront_distribution" "site" {
   is_ipv6_enabled     = true
   default_root_object = "index.html"
   price_class         = "PriceClass_All" # US, Canada, Europe
+  web_acl_id          = "arn:aws:wafv2:us-east-1:020889749910:global/webacl/CreatedByCloudFront-298bf614/6c23384e-8d4a-4036-af76-c99241b5c6ba"
 
   aliases = ["betwithgoodall.com", "www.betwithgoodall.com"]
 
