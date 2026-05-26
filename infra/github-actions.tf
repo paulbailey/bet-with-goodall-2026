@@ -24,7 +24,7 @@ data "aws_iam_policy_document" "frontend_deployer_assume_role" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:paulbailey/bet-with-goodall:*"]
+      values   = ["repo:paulbailey/bet-with-goodall-2026:*"]
     }
   }
 }

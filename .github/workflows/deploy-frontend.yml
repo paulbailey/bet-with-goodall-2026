@@ -49,6 +49,7 @@ jobs:
         with:
           role-to-assume: ${{ vars.AWS_FRONTEND_DEPLOYER_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
+          audience: sts.amazonaws.com
 
       # Upload content-hashed assets first with a long cache header,
       # then upload everything else (index.html, data/) with no-cache.
