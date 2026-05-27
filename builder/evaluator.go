@@ -162,6 +162,52 @@ func evaluateTopScorerBet(playerName string, scorers []TopScorerEntry, groups []
 	return "alive"
 }
 
+// evaluateTournamentWinnerBet returns alive | lost | won for an overall-winner bet.
+// Lost: the team finished 4th in their group, or lost a knockout match.
+// Won:  the team won the FINAL.
+func evaluateTournamentWinnerBet(teamName string, groups []GroupStanding, matches []Match) string {
+	if didTeamWinFinal(teamName, matches) {
+		return "won"
+	}
+	if isTeamEliminated(teamName, groups) || lostKnockoutMatch(teamName, matches) {
+		return "lost"
+	}
+	return "alive"
+}
+
+// lostKnockoutMatch returns true if the team played any finished knockout
+// match (R16, QF, SF, 3rd-place playoff, FINAL) as the losing side.
+func lostKnockoutMatch(teamName string, matches []Match) bool {
+	for _, m := range matches {
+		if m.Status != "FINISHED" || strings.Contains(m.Stage, "GROUP") {
+			continue
+		}
+		switch {
+		case teamsMatch(m.HomeTeam, teamName) && m.Winner == "AWAY_TEAM":
+			return true
+		case teamsMatch(m.AwayTeam, teamName) && m.Winner == "HOME_TEAM":
+			return true
+		}
+	}
+	return false
+}
+
+// didTeamWinFinal returns true if the team won a finished match at the FINAL stage.
+func didTeamWinFinal(teamName string, matches []Match) bool {
+	for _, m := range matches {
+		if m.Stage != "FINAL" || m.Status != "FINISHED" {
+			continue
+		}
+		if teamsMatch(m.HomeTeam, teamName) && m.Winner == "HOME_TEAM" {
+			return true
+		}
+		if teamsMatch(m.AwayTeam, teamName) && m.Winner == "AWAY_TEAM" {
+			return true
+		}
+	}
+	return false
+}
+
 // teamsMatch does a case-insensitive comparison so team names in bets.yaml
 // don't need to exactly match the API's casing.
 func teamsMatch(a, b string) bool {

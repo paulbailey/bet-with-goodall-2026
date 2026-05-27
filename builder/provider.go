@@ -28,6 +28,7 @@ type Match struct {
 	Group    string // GROUP_A, GROUP_B, ... (empty for knockout rounds)
 	HomeTeam string
 	AwayTeam string
+	Winner   string // HOME_TEAM | AWAY_TEAM | DRAW (empty if unfinished/unknown)
 }
 
 type TopScorerEntry struct {

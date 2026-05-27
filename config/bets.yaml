@@ -94,3 +94,12 @@ top_scorer_bets:
     team: Norway
     stake: 5.00
     potential_return: 55.00
+
+# Bets on the overall tournament winner. A bet is alive until the team is
+# knocked out (4th in group, or loses a knockout match), and wins when the
+# team wins the FINAL.
+tournament_winner_bets: []
+  # - id: tw-1
+  #   team: Brazil
+  #   stake: 5.00
+  #   potential_return: 35.00

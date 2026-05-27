@@ -28,7 +28,11 @@ func main() {
 		logger.Error("failed to load config", "err", err)
 		os.Exit(1)
 	}
-	logger.Info("config loaded", "bets", len(cfg.Bets), "top_scorer_bets", len(cfg.TopScorerBets))
+	logger.Info("config loaded",
+		"bets", len(cfg.Bets),
+		"top_scorer_bets", len(cfg.TopScorerBets),
+		"tournament_winner_bets", len(cfg.TournamentWinnerBets),
+	)
 
 	provider := newFootballDataClient(env.APIKey, cfg.CompetitionID, logger)
 
