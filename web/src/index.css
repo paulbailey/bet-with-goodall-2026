@@ -354,7 +354,9 @@ td.col-ts-team  { color: var(--wc-muted); font-size: 0.8rem; }
 
 @media (max-width: 768px) {
   .top-scorers-table th.col-ts-team,
-  .top-scorers-table td.col-ts-team { display: none; }
+  .top-scorers-table td.col-ts-team,
+  .scorer-bets-section th.col-ts-team,
+  .scorer-bets-section td.col-ts-team { display: none; }
 }
 
 .scorer-eliminated td { opacity: 0.45; }
