@@ -8,12 +8,13 @@ import (
 // StateJSON is the schema written to S3 and consumed by the React frontend.
 // Field names must stay in sync with web/src/types.ts.
 type StateJSON struct {
-	UpdatedAt       string               `json:"updated_at"`
-	TournamentPhase string               `json:"tournament_phase"`
-	Groups          map[string]GroupJSON `json:"groups"`
-	Bets            []BetJSON            `json:"bets"`
-	TopScorerBets   []TopScorerBetJSON   `json:"top_scorer_bets"`
-	TopScorers      []TopScorerJSON      `json:"top_scorers"`
+	UpdatedAt            string                    `json:"updated_at"`
+	TournamentPhase      string                    `json:"tournament_phase"`
+	Groups               map[string]GroupJSON      `json:"groups"`
+	Bets                 []BetJSON                 `json:"bets"`
+	TopScorerBets        []TopScorerBetJSON        `json:"top_scorer_bets"`
+	TournamentWinnerBets []TournamentWinnerBetJSON `json:"tournament_winner_bets"`
+	TopScorers           []TopScorerJSON           `json:"top_scorers"`
 }
 
 type GroupJSON struct {
@@ -57,6 +58,14 @@ type TopScorerBetJSON struct {
 	Status          string   `json:"status"`
 }
 
+type TournamentWinnerBetJSON struct {
+	ID              string   `json:"id"`
+	Team            string   `json:"team"`
+	Stake           *float64 `json:"stake,omitempty"`
+	PotentialReturn *float64 `json:"potential_return,omitempty"`
+	Status          string   `json:"status"`
+}
+
 type TopScorerJSON struct {
 	Player          string `json:"player"`
 	Team            string `json:"team"`
@@ -67,12 +76,13 @@ type TopScorerJSON struct {
 
 func buildState(cfg *Config, groups []GroupStanding, scorers []TopScorerEntry, matches []Match) StateJSON {
 	return StateJSON{
-		UpdatedAt:       time.Now().UTC().Format(time.RFC3339),
-		TournamentPhase: tournamentPhase(matches),
-		Groups:          buildGroups(groups),
-		Bets:            buildBets(cfg.Bets, groups),
-		TopScorerBets:   buildTopScorerBets(cfg.TopScorerBets, scorers, groups),
-		TopScorers:      buildTopScorers(scorers, groups),
+		UpdatedAt:            time.Now().UTC().Format(time.RFC3339),
+		TournamentPhase:      tournamentPhase(matches),
+		Groups:               buildGroups(groups),
+		Bets:                 buildBets(cfg.Bets, groups),
+		TopScorerBets:        buildTopScorerBets(cfg.TopScorerBets, scorers, groups),
+		TournamentWinnerBets: buildTournamentWinnerBets(cfg.TournamentWinnerBets, groups, matches),
+		TopScorers:           buildTopScorers(scorers, groups),
 	}
 }
 
@@ -166,6 +176,27 @@ func buildTopScorerBets(bets []TopScorerBetConfig, scorers []TopScorerEntry, gro
 			Player: bc.Player,
 			Team:   bc.Team,
 			Status: evaluateTopScorerBet(bc.Player, scorers, groups),
+		}
+		if bc.Stake > 0 {
+			s := bc.Stake
+			b.Stake = &s
+		}
+		if bc.PotentialReturn > 0 {
+			r := bc.PotentialReturn
+			b.PotentialReturn = &r
+		}
+		out[i] = b
+	}
+	return out
+}
+
+func buildTournamentWinnerBets(bets []TournamentWinnerBetConfig, groups []GroupStanding, matches []Match) []TournamentWinnerBetJSON {
+	out := make([]TournamentWinnerBetJSON, len(bets))
+	for i, bc := range bets {
+		b := TournamentWinnerBetJSON{
+			ID:     bc.ID,
+			Team:   bc.Team,
+			Status: evaluateTournamentWinnerBet(bc.Team, groups, matches),
 		}
 		if bc.Stake > 0 {
 			s := bc.Stake

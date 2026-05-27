@@ -80,3 +80,5 @@ data:
         team: Norway
         stake: 5.00
         potential_return: 55.00
+
+    tournament_winner_bets: []

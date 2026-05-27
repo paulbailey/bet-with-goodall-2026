@@ -285,6 +285,9 @@ body {
   .bet-cards                         { display: flex; }
 }
 
+/* ── Tournament winner bets ── */
+.winner-bets-section .bet-grid-scroll { max-width: 600px; }
+
 /* ── Scorer panels (side-by-side) ── */
 .scorer-panels {
   display: flex;

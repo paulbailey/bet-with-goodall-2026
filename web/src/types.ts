@@ -1,5 +1,6 @@
 export type LegStatus = 'pending' | 'alive' | 'won' | 'lost'
 export type TopScorerBetStatus = 'alive' | 'won' | 'lost'
+export type TournamentWinnerBetStatus = 'alive' | 'won' | 'lost'
 export type BetStatus = 'pending' | 'alive' | 'won' | 'lost'
 export type TournamentPhase = 'pre_tournament' | 'group_stage' | 'knockout' | 'complete'
 
@@ -44,6 +45,14 @@ export interface TopScorerBet {
   status: TopScorerBetStatus
 }
 
+export interface TournamentWinnerBet {
+  id: string
+  team: string
+  stake?: number
+  potential_return?: number
+  status: TournamentWinnerBetStatus
+}
+
 export interface TopScorer {
   player: string
   team: string
@@ -58,5 +67,6 @@ export interface TournamentState {
   groups: Record<string, GroupState>
   bets: Bet[]
   top_scorer_bets: TopScorerBet[]
+  tournament_winner_bets: TournamentWinnerBet[]
   top_scorers: TopScorer[]
 }

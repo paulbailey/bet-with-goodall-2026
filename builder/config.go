@@ -47,9 +47,10 @@ func getEnv(key, fallback string) string {
 }
 
 type Config struct {
-	CompetitionID string               `yaml:"competition_id"`
-	Bets          []BetConfig          `yaml:"bets"`
-	TopScorerBets []TopScorerBetConfig `yaml:"top_scorer_bets"`
+	CompetitionID        string                      `yaml:"competition_id"`
+	Bets                 []BetConfig                 `yaml:"bets"`
+	TopScorerBets        []TopScorerBetConfig        `yaml:"top_scorer_bets"`
+	TournamentWinnerBets []TournamentWinnerBetConfig `yaml:"tournament_winner_bets"`
 }
 
 type BetConfig struct {
@@ -67,6 +68,13 @@ type LegConfig struct {
 type TopScorerBetConfig struct {
 	ID              string  `yaml:"id"`
 	Player          string  `yaml:"player"`
+	Team            string  `yaml:"team"`
+	Stake           float64 `yaml:"stake"`
+	PotentialReturn float64 `yaml:"potential_return"`
+}
+
+type TournamentWinnerBetConfig struct {
+	ID              string  `yaml:"id"`
 	Team            string  `yaml:"team"`
 	Stake           float64 `yaml:"stake"`
 	PotentialReturn float64 `yaml:"potential_return"`
