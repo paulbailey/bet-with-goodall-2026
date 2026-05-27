@@ -86,6 +86,9 @@ type fdMatchesResp struct {
 		AwayTeam struct {
 			Name string `json:"name"`
 		} `json:"awayTeam"`
+		Score struct {
+			Winner string `json:"winner"` // HOME_TEAM | AWAY_TEAM | DRAW | null
+		} `json:"score"`
 	} `json:"matches"`
 }
 
@@ -163,6 +166,7 @@ func (c *footballDataClient) GetMatches(ctx context.Context) ([]Match, error) {
 			Group:    m.Group,
 			HomeTeam: m.HomeTeam.Name,
 			AwayTeam: m.AwayTeam.Name,
+			Winner:   m.Score.Winner,
 		})
 	}
 	return matches, nil

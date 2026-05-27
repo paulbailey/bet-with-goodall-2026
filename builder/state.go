@@ -8,12 +8,13 @@ import (
 // StateJSON is the schema written to S3 and consumed by the React frontend.
 // Field names must stay in sync with web/src/types.ts.
 type StateJSON struct {
-	UpdatedAt       string               `json:"updated_at"`
-	TournamentPhase string               `json:"tournament_phase"`
-	Groups          map[string]GroupJSON `json:"groups"`
-	Bets            []BetJSON            `json:"bets"`
-	TopScorerBets   []TopScorerBetJSON   `json:"top_scorer_bets"`
-	TopScorers      []TopScorerJSON      `json:"top_scorers"`
+	UpdatedAt            string                    `json:"updated_at"`
+	TournamentPhase      string                    `json:"tournament_phase"`
+	Groups               map[string]GroupJSON      `json:"groups"`
+	Bets                 []BetJSON                 `json:"bets"`
+	TopScorerBets        []TopScorerBetJSON        `json:"top_scorer_bets"`
+	TournamentWinnerBets []TournamentWinnerBetJSON `json:"tournament_winner_bets"`
+	TopScorers           []TopScorerJSON           `json:"top_scorers"`
 }
 
 type GroupJSON struct {
@@ -57,6 +58,14 @@ type TopScorerBetJSON struct {
 	Status          string   `json:"status"`
 }
 
+type TournamentWinnerBetJSON struct {
+	ID              string   `json:"id"`
+	Team            string   `json:"team"`
+	Stake           *float64 `json:"stake,omitempty"`
+	PotentialReturn *float64 `json:"potential_return,omitempty"`
+	Status          string   `json:"status"`
+}
+
 type TopScorerJSON struct {
 	Player          string `json:"player"`
 	Team            string `json:"team"`
@@ -67,12 +76,13 @@ type TopScorerJSON struct {
 
 func buildState(cfg *Config, groups []GroupStanding, scorers []TopScorerEntry, matches []Match) StateJSON {
 	return StateJSON{
-		UpdatedAt:       time.Now().UTC().Format(time.RFC3339),
-		TournamentPhase: tournamentPhase(matches),
-		Groups:          buildGroups(groups),
-		Bets:            buildBets(cfg.Bets, groups),
-		TopScorerBets:   buildTopScorerBets(cfg.TopScorerBets, scorers, groups),
-		TopScorers:      buildTopScorers(scorers, groups),
+		UpdatedAt:            time.Now().UTC().Format(time.RFC3339),
+		TournamentPhase:      tournamentPhase(matches),
+		Groups:               buildGroups(groups),
+		Bets:                 buildBets(cfg.Bets, groups),
+		TopScorerBets:        buildTopScorerBets(cfg.TopScorerBets, scorers, groups),
+		TournamentWinnerBets: buildTournamentWinnerBets(cfg.TournamentWinnerBets, groups, matches),
+		TopScorers:           buildTopScorers(scorers, groups),
 	}
 }
 
@@ -180,6 +190,27 @@ func buildTopScorerBets(bets []TopScorerBetConfig, scorers []TopScorerEntry, gro
 	return out
 }
 
+func buildTournamentWinnerBets(bets []TournamentWinnerBetConfig, groups []GroupStanding, matches []Match) []TournamentWinnerBetJSON {
+	out := make([]TournamentWinnerBetJSON, len(bets))
+	for i, bc := range bets {
+		b := TournamentWinnerBetJSON{
+			ID:     bc.ID,
+			Team:   bc.Team,
+			Status: evaluateTournamentWinnerBet(bc.Team, groups, matches),
+		}
+		if bc.Stake > 0 {
+			s := bc.Stake
+			b.Stake = &s
+		}
+		if bc.PotentialReturn > 0 {
+			r := bc.PotentialReturn
+			b.PotentialReturn = &r
+		}
+		out[i] = b
+	}
+	return out
+}
+
 func buildTopScorers(scorers []TopScorerEntry, groups []GroupStanding) []TopScorerJSON {
 	out := make([]TopScorerJSON, len(scorers))
 	for i, s := range scorers {
@@ -194,6 +225,13 @@ func buildTopScorers(scorers []TopScorerEntry, groups []GroupStanding) []TopScor
 	return out
 }
 
+// notStarted returns true for statuses that mean a match hasn't kicked off yet.
+// football-data.org uses "TIMED" (kickoff confirmed) and "SCHEDULED" (date TBC);
+// both are "not started" for our purposes.
+func notStarted(status string) bool {
+	return status == "SCHEDULED" || status == "TIMED"
+}
+
 func tournamentPhase(matches []Match) string {
 	if len(matches) == 0 {
 		return "pre_tournament"
@@ -201,13 +239,13 @@ func tournamentPhase(matches []Match) string {
 
 	anyStarted, allFinished, hasKnockout := false, true, false
 	for _, m := range matches {
-		if m.Status != "SCHEDULED" {
+		if !notStarted(m.Status) {
 			anyStarted = true
 		}
 		if m.Status != "FINISHED" {
 			allFinished = false
 		}
-		if !strings.Contains(m.Stage, "GROUP") && m.Status != "SCHEDULED" {
+		if !strings.Contains(m.Stage, "GROUP") && !notStarted(m.Status) {
 			hasKnockout = true
 		}
 	}

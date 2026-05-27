@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: bet-with-goodall
+
+resources:
+  - builder/k8s/serviceaccount.yaml
+  - builder/k8s/secret.externalsecret.yaml
+  - builder/k8s/deployment.yaml
+
+# Generate the ConfigMap from config/bets.yaml so it stays the single source
+# of truth for bet definitions. ArgoCD's Application should point at the
+# repo root (path: .) so this kustomization is picked up.
+configMapGenerator:
+  - name: bet-builder-config
+    files:
+      - bets.yaml=config/bets.yaml
+
+generatorOptions:
+  # Keep a stable name so the Deployment's configMap reference works as-is.
+  disableNameSuffixHash: true

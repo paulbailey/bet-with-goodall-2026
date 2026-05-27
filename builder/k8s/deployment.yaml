@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bet-builder
-  namespace: default
+  namespace: bet-with-goodall
 spec:
   replicas: 1
   selector:
@@ -14,22 +14,39 @@ spec:
         app: bet-builder
     spec:
       serviceAccountName: bet-builder
+      volumes:
+        - name: aws-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  audience: sts.amazonaws.com
+                  expirationSeconds: 3600
+                  path: token
+        - name: config
+          configMap:
+            name: bet-builder-config
       containers:
         - name: builder
-          # Replace with your actual image reference after pushing to a registry
-          image: bet-builder:latest
+          image: ghcr.io/paulbailey/bet-with-goodall-builder:latest
           imagePullPolicy: Always
           env:
+            - name: AWS_ROLE_ARN
+              value: "arn:aws:iam::020889749910:role/bet-builder"
+            - name: AWS_WEB_IDENTITY_TOKEN_FILE
+              value: /var/run/secrets/eks.amazonaws.com/serviceaccount/token
             - name: FDB_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: bet-builder-secrets
+                  name: bet-builder
                   key: FDB_API_KEY
             - name: S3_BUCKET
-              value: "REPLACE_WITH_BUCKET_NAME"
+              value: "bet-with-goodall"
             - name: AWS_REGION
-              value: "eu-west-1"
+              value: "eu-west-2"
           volumeMounts:
+            - name: aws-token
+              mountPath: /var/run/secrets/eks.amazonaws.com/serviceaccount
+              readOnly: true
             - name: config
               mountPath: /config
           resources:
@@ -38,7 +55,3 @@ spec:
               memory: 32Mi
             limits:
               memory: 64Mi
-      volumes:
-        - name: config
-          configMap:
-            name: bet-builder-config

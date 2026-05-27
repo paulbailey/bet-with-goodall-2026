@@ -174,10 +174,14 @@ body {
 .leg-na   { color: var(--wc-border); }
 
 /* Status, stake & return columns */
-.col-stake  { white-space: nowrap; color: var(--wc-muted); font-size: 0.8rem; }
-.col-return { white-space: nowrap; font-weight: 600; font-size: 0.8rem; color: var(--wc-text); }
-.col-return.return-won { color: #b45309; }
+.col-stake  { white-space: nowrap; font-size: 0.8rem; }
+.col-return { white-space: nowrap; font-weight: 600; font-size: 0.8rem; }
 .col-status { white-space: nowrap; font-weight: 700; font-size: 0.8rem; }
+
+/* Body-only colour overrides — headers inherit white from thead tr */
+.bet-grid tbody td.col-stake  { color: var(--wc-muted); }
+.bet-grid tbody td.col-return { color: var(--wc-text); }
+.bet-grid tbody td.col-return.return-won { color: #b45309; }
 
 /* Sticky status column — always visible when table scrolls horizontally */
 .bet-grid th.col-status,
@@ -281,6 +285,9 @@ body {
   .bet-cards                         { display: flex; }
 }
 
+/* ── Tournament winner bets ── */
+.winner-bets-section .bet-grid-scroll { max-width: 600px; }
+
 /* ── Scorer panels (side-by-side) ── */
 .scorer-panels {
   display: flex;
@@ -343,6 +350,11 @@ body {
 .top-scorers-table td.col-goals    { font-weight: 700; color: var(--wc-navy); }
 .top-scorers-table td.col-ts-player { text-align: left; font-weight: 600; }
 .top-scorers-table td.col-ts-team  { text-align: left; color: var(--wc-muted); font-size: 0.8rem; }
+
+@media (max-width: 768px) {
+  .top-scorers-table th.col-ts-team,
+  .top-scorers-table td.col-ts-team { display: none; }
+}
 
 .scorer-eliminated td { opacity: 0.45; }
 .scorer-eliminated td.col-ts-player::after {
@@ -407,7 +419,7 @@ body {
 
 .group-table th {
   background: #f0f4ff;
-  color: var(--wc-muted);
+  color: var(--wc-navy);
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;

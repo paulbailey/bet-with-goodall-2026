@@ -1,32 +1,31 @@
-import type { TopScorerBet, TopScorerBetStatus } from '../types'
+import type { TournamentWinnerBet, TournamentWinnerBetStatus } from '../types'
 import { getCountry } from '../countries'
 import { Flag } from './Flag'
 
-interface TopScorerBetsProps {
-  bets: TopScorerBet[]
+interface TournamentWinnerBetsProps {
+  bets: TournamentWinnerBet[]
 }
 
-const STATUS_CLASS: Record<TopScorerBetStatus, string> = {
+const STATUS_CLASS: Record<TournamentWinnerBetStatus, string> = {
   alive: 'bet-alive',
   won:   'bet-won',
   lost:  'bet-lost',
 }
 
-const STATUS_LABEL: Record<TopScorerBetStatus, string> = {
+const STATUS_LABEL: Record<TournamentWinnerBetStatus, string> = {
   alive: 'Alive',
   won:   'Won!',
   lost:  'Bust',
 }
 
-export function TopScorerBets({ bets }: TopScorerBetsProps) {
+export function TournamentWinnerBets({ bets }: TournamentWinnerBetsProps) {
   return (
-    <section className="scorer-bets-section">
-      <h2 className="section-title">Top Scorer Bets</h2>
+    <section className="winner-bets-section">
+      <h2 className="section-title">Tournament Winner Bets</h2>
       <div className="bet-grid-scroll">
         <table className="bet-grid">
           <thead>
             <tr>
-              <th className="col-ts-player">Player</th>
               <th className="col-ts-team">Team</th>
               <th className="col-stake">Stake</th>
               <th className="col-return">Return</th>
@@ -38,7 +37,6 @@ export function TopScorerBets({ bets }: TopScorerBetsProps) {
               const { fi } = getCountry(bet.team)
               return (
                 <tr key={bet.id} className={`bet-row ${STATUS_CLASS[bet.status]}`}>
-                  <td className="col-ts-player">{bet.player}</td>
                   <td className="col-ts-team">
                     <Flag fi={fi} className="team-flag" />
                     {bet.team}
