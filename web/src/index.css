@@ -419,7 +419,7 @@ body {
 
 .group-table th {
   background: #f0f4ff;
-  color: var(--wc-muted);
+  color: var(--wc-navy);
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;

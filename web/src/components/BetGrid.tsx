@@ -28,7 +28,7 @@ const BET_STATUS_CLASS: Record<BetStatus, string> = {
 }
 
 const BET_STATUS_LABEL: Record<BetStatus, string> = {
-  pending: 'Pending',
+  pending: 'Alive',
   alive:   'Alive',
   won:     'Won!',
   lost:    'Bust',
