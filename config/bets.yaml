@@ -84,8 +84,8 @@ bets:
 
   # All-favourites group-winner accumulator across every group.
   - id: bet-5
-    stake: 1.00
-    potential_return: 85.00
+    stake: 5.00
+    potential_return: 880.00
     legs:
       - group: A
         team: Mexico
