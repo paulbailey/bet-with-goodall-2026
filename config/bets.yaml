@@ -82,6 +82,36 @@ bets:
       - group: K
         team: Portugal
 
+  # All-favourites group-winner accumulator across every group.
+  - id: bet-5
+    stake: 1.00
+    potential_return: 85.00
+    legs:
+      - group: A
+        team: Mexico
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Brazil
+      - group: D
+        team: United States
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Belgium
+      - group: H
+        team: Spain
+      - group: I
+        team: France
+      - group: J
+        team: Argentina
+      - group: K
+        team: Portugal
+      - group: L
+        team: England
+
 top_scorer_bets:
   - id: tsb-1
     player: "Harry Kane"
