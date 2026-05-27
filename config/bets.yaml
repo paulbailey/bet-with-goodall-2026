@@ -84,22 +84,16 @@ bets:
 
 top_scorer_bets:
   - id: tsb-1
-    player: "Kylian Mbappé"
-    team: France
+    player: "Harry Kane"
+    team: England
     stake: 5.00
-    potential_return: 37.50
-
-  - id: tsb-2
-    player: "Erling Haaland"
-    team: Norway
-    stake: 5.00
-    potential_return: 55.00
+    potential_return: 40.00
 
 # Bets on the overall tournament winner. A bet is alive until the team is
 # knocked out (4th in group, or loses a knockout match), and wins when the
 # team wins the FINAL.
-tournament_winner_bets: []
-  # - id: tw-1
-  #   team: Brazil
-  #   stake: 5.00
-  #   potential_return: 35.00
+tournament_winner_bets:
+  - id: tw-1
+    team: England
+    stake: 5.00
+    potential_return: 35.00
