@@ -9,7 +9,7 @@ The group places several accumulator bets before the tournament (group-winner pr
 ## Repo layout
 
 ```
-web/        React + Vite frontend
+web/        Svelte 5 + Vite frontend
 builder/    Go binary that polls for results and regenerates the JSON data files
 infra/      Terraform for AWS S3 + CloudFront
 config/     bets.yaml — the bet definitions, edited once before the tournament
@@ -19,11 +19,11 @@ config/     bets.yaml — the bet definitions, edited once before the tournament
 
 1. `config/bets.yaml` defines every accumulator and its legs (which team wins which group).
 2. The Go builder runs as a k8s Deployment on a homelab cluster. It polls a football results API, calculates which legs are still alive, and writes `data/state.json` to the S3 bucket.
-3. CloudFront serves the static site. The React app fetches `data/state.json` and renders the bet grid.
+3. CloudFront serves the static site. The Svelte app fetches `data/state.json` and renders the bet grid.
 
 ## Key decisions
 
-- Frontend: React + Vite, no SSR.
+- Frontend: Svelte 5 + Vite, no SSR. Components use Svelte 5 runes (`$state`, `$derived`, `$props`).
 - Builder: Go, long-running Deployment (smart polling — frequent near match times, slow otherwise).
 - Auth to AWS: IRSA (k8s ServiceAccount annotation).
 - Infrastructure: Terraform, user has Terraform Cloud configured.
