@@ -305,7 +305,8 @@ body {
 
 /* ── Top scorer bets ── */
 .col-ts-player { text-align: left; font-weight: 600; white-space: nowrap; }
-.col-ts-team   { text-align: left; white-space: nowrap; color: var(--wc-muted); font-size: 0.8rem; }
+.col-ts-team    { text-align: left; white-space: nowrap; }
+td.col-ts-team  { color: var(--wc-muted); font-size: 0.8rem; }
 
 /* ── Top scorers table ── */
 .top-scorers-wrap {
