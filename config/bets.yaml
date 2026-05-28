@@ -139,7 +139,7 @@ match_result_bets:
     team_b: Ghana
     score_b: 1
     stake: 5.00
-    potential_return: 65.00
+    potential_return: 60.00
 
   - id: mr-2
     team_a: England
@@ -147,7 +147,7 @@ match_result_bets:
     team_b: Croatia
     score_b: 1
     stake: 5.00
-    potential_return: 80.00
+    potential_return: 75.00
 
   - id: mr-3
     team_a: England
@@ -155,7 +155,7 @@ match_result_bets:
     team_b: Panama
     score_b: 1
     stake: 5.00
-    potential_return: 65.00
+    potential_return: 60.00
 
 # Accumulators of match outcomes. Each leg predicts one fixture's result for a
 # nominated team (outcome: win | draw | lose). The acca is bust as soon as any
@@ -163,7 +163,7 @@ match_result_bets:
 match_acca_bets:
   - id: ma-1
     stake: 5.00
-    potential_return: 19.15
+    potential_return: 14.15
     legs:
       - team: England
         opponent: Croatia
@@ -182,4 +182,4 @@ finalist_bets:
     team_a: France
     team_b: Spain
     stake: 5.00
-    potential_return: 60.00
+    potential_return: 105.00
