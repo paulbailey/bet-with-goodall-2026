@@ -41,6 +41,7 @@ type GroupSimResult struct {
 
 type simTeam struct {
 	name           string
+	group          string // group letter (upper-case), for bracket seeding
 	rating         float64
 	points, gf, ga int
 	tiebreak       float64 // per-iteration random, splits exact ties
@@ -75,54 +76,23 @@ func poissonSample(rng *rand.Rand, lambda float64) int {
 func simulateGroupStage(groups []GroupStanding, matches []Match, strength map[string]float64, iterations int, seed int64) map[string]GroupSimResult {
 	rng := rand.New(rand.NewSource(seed))
 	results := finishedGroupResults(matches)
-
-	ratingFor := func(name string) float64 {
-		if r, ok := strength[lowerName(name)]; ok {
-			return r
-		}
-		return 0
-	}
+	ratingFor := strengthLookup(strength)
+	thirdsToQualify := thirdsQualifying(len(groups))
 
 	winCount := map[string]int{}
 	qualifyCount := map[string]int{}
-	thirdsToQualify := koTeams - 2*len(groups)
-	if thirdsToQualify < 0 {
-		thirdsToQualify = 0
-	}
 
 	for iter := 0; iter < iterations; iter++ {
-		var thirds []*simTeam
-
-		for _, g := range groups {
-			teams := make([]*simTeam, len(g.Teams))
-			for i := range g.Teams {
-				teams[i] = &simTeam{name: g.Teams[i].Name, rating: ratingFor(g.Teams[i].Name), tiebreak: rng.Float64()}
-			}
-
-			// Round-robin: every distinct pair meets once.
-			for i := 0; i < len(teams); i++ {
-				for j := i + 1; j < len(teams); j++ {
-					a, b := teams[i], teams[j]
-					ga, gb := scoreFor(results, a.name, b.name, rng, a.rating, b.rating)
-					applyResult(a, b, ga, gb)
-				}
-			}
-
-			ranked := rankGroup(teams)
-			winCount[lowerName(ranked[0].name)]++
-			qualifyCount[lowerName(ranked[0].name)]++
-			if len(ranked) > 1 {
-				qualifyCount[lowerName(ranked[1].name)]++
-			}
-			if len(ranked) > 2 {
-				thirds = append(thirds, ranked[2])
+		ranked, qualThirds := simulateGroupsOnce(groups, results, ratingFor, thirdsToQualify, rng)
+		for _, r := range ranked {
+			winCount[lowerName(r[0].name)]++
+			qualifyCount[lowerName(r[0].name)]++
+			if len(r) > 1 {
+				qualifyCount[lowerName(r[1].name)]++
 			}
 		}
-
-		// Best third-placed teams across all groups fill the remaining slots.
-		sort.SliceStable(thirds, func(i, j int) bool { return lessForRank(thirds[i], thirds[j]) })
-		for i := 0; i < thirdsToQualify && i < len(thirds); i++ {
-			qualifyCount[lowerName(thirds[i].name)]++
+		for _, t := range qualThirds {
+			qualifyCount[lowerName(t.name)]++
 		}
 	}
 
@@ -138,6 +108,69 @@ func simulateGroupStage(groups []GroupStanding, matches []Match, strength map[st
 		}
 	}
 	return out
+}
+
+// strengthLookup wraps a case-insensitive rating map, defaulting to 0.
+func strengthLookup(strength map[string]float64) func(string) float64 {
+	return func(name string) float64 {
+		if r, ok := strength[lowerName(name)]; ok {
+			return r
+		}
+		return 0
+	}
+}
+
+// thirdsQualifying is how many best-third-placed teams advance given the group
+// count (knockout field minus the two automatic qualifiers per group).
+func thirdsQualifying(numGroups int) int {
+	n := koTeams - 2*numGroups
+	if n < 0 {
+		return 0
+	}
+	return n
+}
+
+// simulateGroupsOnce plays one full group stage: every group's round-robin
+// (finished fixtures held fixed, the rest simulated), returning each group's
+// teams ranked 1st→4th and the best third-placed teams that qualify.
+func simulateGroupsOnce(groups []GroupStanding, results map[string][2]int, ratingFor func(string) float64, thirdsToQualify int, rng *rand.Rand) (map[string][]*simTeam, []*simTeam) {
+	ranked := make(map[string][]*simTeam, len(groups))
+	var thirds []*simTeam
+
+	for _, g := range groups {
+		letter := strings.ToUpper(g.Group)
+		teams := make([]*simTeam, len(g.Teams))
+		for i := range g.Teams {
+			teams[i] = &simTeam{
+				name:     g.Teams[i].Name,
+				group:    letter,
+				rating:   ratingFor(g.Teams[i].Name),
+				tiebreak: rng.Float64(),
+			}
+		}
+
+		// Round-robin: every distinct pair meets once.
+		for i := 0; i < len(teams); i++ {
+			for j := i + 1; j < len(teams); j++ {
+				a, b := teams[i], teams[j]
+				ga, gb := scoreFor(results, a.name, b.name, rng, a.rating, b.rating)
+				applyResult(a, b, ga, gb)
+			}
+		}
+
+		r := rankGroup(teams)
+		ranked[letter] = r
+		if len(r) > 2 {
+			thirds = append(thirds, r[2])
+		}
+	}
+
+	// Best third-placed teams across all groups fill the remaining slots.
+	sort.SliceStable(thirds, func(i, j int) bool { return lessForRank(thirds[i], thirds[j]) })
+	if thirdsToQualify > len(thirds) {
+		thirdsToQualify = len(thirds)
+	}
+	return ranked, thirds[:thirdsToQualify]
 }
 
 func applyResult(a, b *simTeam, ga, gb int) {
