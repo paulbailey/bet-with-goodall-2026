@@ -136,6 +136,39 @@ top_scorer_bets:
     team: France
     stake: 5.00
     potential_return: 37.50
+
+# Exact scoreline for one fixture. Matched by team identity, so team_a/team_b
+# order is independent of the fixture's home/away side. Goes bust the moment
+# the scoreline is unreachable (goals only increase), not just at full-time.
+match_result_bets:
+  - id: mr-1
+    team_a: England
+    score_a: 3
+    team_b: Ghana
+    score_b: 1
+    stake: 5.00
+    potential_return: 50.00
+
+# Accumulator of match outcomes; each leg is one fixture's result for a team
+# (outcome: win | draw | lose). Bust if any leg is lost.
+match_acca_bets:
+  - id: ma-1
+    stake: 5.00
+    potential_return: 120.00
+    legs:
+      - team: England
+        opponent: Croatia
+        outcome: win
+      # ...
+
+# Predicted final pairing. Won once both teams reach the final; bust the moment
+# either is knocked out.
+finalist_bets:
+  - id: fin-1
+    team_a: France
+    team_b: Spain
+    stake: 5.00
+    potential_return: 60.00
 ```
 
 ### `data/state.json`
@@ -185,6 +218,41 @@ Written by the builder, read by the frontend. Schema:
       "stake": 5.00,              // optional
       "potential_return": 37.50,  // optional
       "status": "alive"           // alive | lost | won
+    }
+  ],
+  "match_result_bets": [
+    {
+      "id": "mr-1",
+      "team_a": "England", "team_b": "Ghana",
+      "score_a": 3, "score_b": 1,    // predicted scoreline
+      "actual_a": 3, "actual_b": 1,  // live/final goals, null until known
+      "stake": 5.00,                 // optional
+      "potential_return": 50.00,     // optional
+      "status": "won"                // pending | alive | won | lost
+    }
+  ],
+  "match_acca_bets": [
+    {
+      "id": "ma-1",
+      "stake": 5.00,              // optional
+      "potential_return": 120.00, // optional
+      "status": "alive",          // pending | alive | won | lost
+      "legs": [
+        {
+          "team": "England", "opponent": "Croatia",
+          "outcome": "win",       // win | draw | lose
+          "status": "won"         // pending | alive | won | lost
+        }
+      ]
+    }
+  ],
+  "finalist_bets": [
+    {
+      "id": "fin-1",
+      "team_a": "France", "team_b": "Spain",
+      "stake": 5.00,             // optional
+      "potential_return": 60.00, // optional
+      "status": "alive"          // alive | won | lost
     }
   ],
   "top_scorers": [

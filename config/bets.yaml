@@ -127,3 +127,43 @@ tournament_winner_bets:
     team: England
     stake: 5.00
     potential_return: 35.00
+
+# Exact-scoreline bets on a single fixture, e.g. "England 3-1 Ghana".
+# Scores are matched by team identity, so the order of team_a/team_b is
+# independent of which side the fixture lists as home. A bet goes bust the
+# moment the scoreline becomes unreachable (goals only ever increase).
+match_result_bets:
+  - id: mr-1
+    team_a: England
+    score_a: 3
+    team_b: Ghana
+    score_b: 1
+    stake: 5.00
+    potential_return: 50.00
+
+# Accumulators of match outcomes. Each leg predicts one fixture's result for a
+# nominated team (outcome: win | draw | lose). The acca is bust as soon as any
+# leg is lost. Example: England to win all three of their group games.
+match_acca_bets:
+  - id: ma-1
+    stake: 5.00
+    potential_return: 120.00
+    legs:
+      - team: England
+        opponent: Croatia
+        outcome: win
+      - team: England
+        opponent: Ghana
+        outcome: win
+      - team: England
+        opponent: Panama
+        outcome: win
+
+# Predict both finalists, e.g. "France vs Spain". Won once both teams reach the
+# final (regardless of who wins it); bust the moment either team is knocked out.
+finalist_bets:
+  - id: fin-1
+    team_a: France
+    team_b: Spain
+    stake: 5.00
+    potential_return: 60.00

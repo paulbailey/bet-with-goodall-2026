@@ -87,7 +87,11 @@ type fdMatchesResp struct {
 			Name string `json:"name"`
 		} `json:"awayTeam"`
 		Score struct {
-			Winner string `json:"winner"` // HOME_TEAM | AWAY_TEAM | DRAW | null
+			Winner   string `json:"winner"` // HOME_TEAM | AWAY_TEAM | DRAW | null
+			FullTime struct {
+				Home *int `json:"home"` // null until a score is published
+				Away *int `json:"away"`
+			} `json:"fullTime"`
 		} `json:"score"`
 	} `json:"matches"`
 }
@@ -160,13 +164,15 @@ func (c *footballDataClient) GetMatches(ctx context.Context) ([]Match, error) {
 			continue
 		}
 		matches = append(matches, Match{
-			UtcDate:  t,
-			Status:   m.Status,
-			Stage:    m.Stage,
-			Group:    m.Group,
-			HomeTeam: m.HomeTeam.Name,
-			AwayTeam: m.AwayTeam.Name,
-			Winner:   m.Score.Winner,
+			UtcDate:   t,
+			Status:    m.Status,
+			Stage:     m.Stage,
+			Group:     m.Group,
+			HomeTeam:  m.HomeTeam.Name,
+			AwayTeam:  m.AwayTeam.Name,
+			Winner:    m.Score.Winner,
+			HomeScore: m.Score.FullTime.Home,
+			AwayScore: m.Score.FullTime.Away,
 		})
 	}
 	return matches, nil
