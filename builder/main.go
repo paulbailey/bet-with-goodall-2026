@@ -140,7 +140,12 @@ func setupBetfair(ctx context.Context, env Env, logger *slog.Logger) *betfairCli
 	}
 	c := newBetfairClient(env.BetfairAppKey, logger)
 	haveCreds := env.BetfairUsername != "" && env.BetfairPassword != ""
-	haveCert := env.BetfairCertFile != "" && env.BetfairKeyFile != ""
+	// Require the keypair files to actually exist, not just the paths to be set.
+	// The Deployment sets BETFAIR_CERT_FILE/KEY_FILE unconditionally, so in
+	// results-only or interactive-only mode the (optional) Secret volume mounts
+	// empty — checking existence lets auth fall through instead of erroring.
+	haveCert := env.BetfairCertFile != "" && env.BetfairKeyFile != "" &&
+		fileExists(env.BetfairCertFile) && fileExists(env.BetfairKeyFile)
 	switch {
 	case env.BetfairToken != "":
 		c.UseToken(env.BetfairToken)
@@ -186,6 +191,12 @@ func refreshOdds(ctx context.Context, bf *betfairClient, groups []GroupStanding,
 		"rated_teams", len(strength),
 	)
 	return &oddsBundle{snap: snap, strength: strength, fetched: time.Now()}
+}
+
+// fileExists reports whether path exists and is readable as a regular file.
+func fileExists(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && !info.IsDir()
 }
 
 // finalistPairs extracts the configured finalist bets' team pairs so the
