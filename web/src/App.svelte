@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import type { TournamentState } from './types'
   import Header from './components/Header.svelte'
+  import SummaryBar from './components/SummaryBar.svelte'
   import BetGrid from './components/BetGrid.svelte'
   import MatchAccaBets from './components/MatchAccaBets.svelte'
   import MatchResultBets from './components/MatchResultBets.svelte'
@@ -47,6 +48,7 @@
   <p class="state-message">Loading…</p>
 {:else}
   <main class="app-content">
+    <SummaryBar {data} />
     <BetGrid bets={data.bets} />
     {#if data.match_acca_bets.length > 0}
       <MatchAccaBets bets={data.match_acca_bets} />
