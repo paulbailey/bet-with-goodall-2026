@@ -15,8 +15,6 @@
   --leg-lost-fg:    #991B1B;
   --leg-won-bg:     #FEF9C3;
   --leg-won-fg:     #92400E;
-  --leg-pending-bg: #F3F4F6;
-  --leg-pending-fg: #6B7280;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -167,7 +165,6 @@ body {
 .leg-alive   { background: var(--leg-alive-bg);   color: var(--leg-alive-fg); }
 .leg-lost    { background: var(--leg-lost-bg);    color: var(--leg-lost-fg); }
 .leg-won     { background: var(--leg-won-bg);     color: var(--leg-won-fg); }
-.leg-pending { background: var(--leg-pending-bg); color: var(--leg-pending-fg); }
 .leg-empty   { background: transparent;           color: var(--wc-border); }
 
 .leg-icon { display: block; font-size: 0.65rem; margin-top: 0.1rem; opacity: 0.8; }
@@ -197,7 +194,6 @@ body {
 .status-cell.bet-alive   { color: var(--leg-alive-fg); }
 .status-cell.bet-lost    { color: var(--leg-lost-fg); }
 .status-cell.bet-won     { color: #b45309; }
-.status-cell.bet-pending { color: var(--wc-muted); }
 
 /* ── Flag icons sizing ── */
 .fi { border-radius: 2px; vertical-align: middle; }
@@ -278,7 +274,6 @@ body {
 .bet-card-status.bet-alive   { color: var(--leg-alive-fg); }
 .bet-card-status.bet-lost    { color: var(--leg-lost-fg); }
 .bet-card-status.bet-won     { color: #b45309; }
-.bet-card-status.bet-pending { color: var(--wc-muted); }
 
 @media (max-width: 768px) {
   .bet-grid-section .bet-grid-scroll { display: none; }

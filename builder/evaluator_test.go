@@ -124,13 +124,13 @@ func TestEvaluateTournamentWinnerBet_CaseInsensitiveTeamMatch(t *testing.T) {
 
 // ── Match-result (exact scoreline) bets ───────────────────────────────────────
 
-func TestEvaluateMatchResultBet_PendingWhenNoFixtureOrNotStarted(t *testing.T) {
-	if got := evaluateMatchResultBet("England", "Ghana", 3, 1, nil); got != "pending" {
-		t.Fatalf("no fixture should be pending, got %s", got)
+func TestEvaluateMatchResultBet_AliveWhenNoFixtureOrNotStarted(t *testing.T) {
+	if got := evaluateMatchResultBet("England", "Ghana", 3, 1, nil); got != "alive" {
+		t.Fatalf("no fixture should be alive, got %s", got)
 	}
 	matches := []Match{{Status: "SCHEDULED", HomeTeam: "England", AwayTeam: "Ghana"}}
-	if got := evaluateMatchResultBet("England", "Ghana", 3, 1, matches); got != "pending" {
-		t.Fatalf("not-started fixture should be pending, got %s", got)
+	if got := evaluateMatchResultBet("England", "Ghana", 3, 1, matches); got != "alive" {
+		t.Fatalf("not-started fixture should be alive, got %s", got)
 	}
 }
 
@@ -192,7 +192,7 @@ func TestEvaluateMatchOutcomeLeg(t *testing.T) {
 		{"won when draw predicted and drawn", Match{Stage: "GROUP_STAGE", Status: "FINISHED", HomeTeam: "England", AwayTeam: "Ghana", Winner: "DRAW"}, "England", "Ghana", "draw", "won"},
 		{"won when lose predicted and lost", Match{Stage: "GROUP_STAGE", Status: "FINISHED", HomeTeam: "England", AwayTeam: "Ghana", Winner: "AWAY_TEAM"}, "England", "Ghana", "lose", "won"},
 		{"alive while in play", Match{Stage: "GROUP_STAGE", Status: "IN_PLAY", HomeTeam: "England", AwayTeam: "Ghana"}, "England", "Ghana", "win", "alive"},
-		{"pending when not started", Match{Stage: "GROUP_STAGE", Status: "SCHEDULED", HomeTeam: "England", AwayTeam: "Ghana"}, "England", "Ghana", "win", "pending"},
+		{"alive when not started", Match{Stage: "GROUP_STAGE", Status: "SCHEDULED", HomeTeam: "England", AwayTeam: "Ghana"}, "England", "Ghana", "win", "alive"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -211,9 +211,9 @@ func TestCombineLegStatuses(t *testing.T) {
 	}{
 		{[]string{"won", "won", "won"}, "won"},
 		{[]string{"won", "lost", "alive"}, "lost"},
-		{[]string{"pending", "pending"}, "pending"},
-		{[]string{"won", "pending", "alive"}, "alive"},
-		{nil, "pending"},
+		{[]string{"alive", "alive"}, "alive"},
+		{[]string{"won", "alive"}, "alive"},
+		{nil, "alive"},
 	}
 	for _, c := range cases {
 		if got := combineLegStatuses(c.in); got != c.want {

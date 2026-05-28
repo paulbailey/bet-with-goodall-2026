@@ -10,14 +10,12 @@
   let { bets }: Props = $props()
 
   const STATUS_CLASS: Record<BetStatus, string> = {
-    pending: 'bet-pending',
     alive:   'bet-alive',
     won:     'bet-won',
     lost:    'bet-lost',
   }
 
   const STATUS_LABEL: Record<BetStatus, string> = {
-    pending: 'Pending',
     alive:   'Alive',
     won:     'Won!',
     lost:    'Bust',

@@ -47,7 +47,7 @@ func nextPollInterval(matches []Match) time.Duration {
 }
 
 // evaluateLeg determines whether the predicted group winner is still possible.
-// Returns one of: pending | alive | won | lost
+// Returns one of: alive | won | lost. Anything not yet decided is "alive".
 func evaluateLeg(group, teamName string, groups []GroupStanding) string {
 	for _, g := range groups {
 		if g.Group != group {
@@ -63,7 +63,7 @@ func evaluateLeg(group, teamName string, groups []GroupStanding) string {
 		}
 		if predicted == nil {
 			// Team not found in this group — config mismatch
-			return "pending"
+			return "alive"
 		}
 
 		// Group is complete when all teams have played 3 games
@@ -85,7 +85,7 @@ func evaluateLeg(group, teamName string, groups []GroupStanding) string {
 
 		if predicted.Played == 0 {
 			// Group hasn't kicked off yet
-			return "pending"
+			return "alive"
 		}
 
 		// Mathematically impossible if another team's current points already
@@ -104,7 +104,7 @@ func evaluateLeg(group, teamName string, groups []GroupStanding) string {
 	}
 
 	// No group data available yet
-	return "pending"
+	return "alive"
 }
 
 // isTeamEliminated returns true once a team's group is complete and they
@@ -240,13 +240,13 @@ func teamScores(m *Match, team string) (forGoals, againstGoals int, ok bool) {
 	return *m.AwayScore, *m.HomeScore, true
 }
 
-// evaluateMatchResultBet returns pending | alive | won | lost for an exact
-// scoreline. It flips to "lost" mid-match the moment the scoreline becomes
-// unreachable (goals only ever increase).
+// evaluateMatchResultBet returns alive | won | lost for an exact scoreline.
+// It flips to "lost" mid-match the moment the scoreline becomes unreachable
+// (goals only ever increase). Anything not yet decided is "alive".
 func evaluateMatchResultBet(teamA, teamB string, scoreA, scoreB int, matches []Match) string {
 	m := findMatch(teamA, teamB, matches)
 	if m == nil || notStarted(m.Status) {
-		return "pending"
+		return "alive"
 	}
 
 	forA, againstA, ok := teamScores(m, teamA)
@@ -268,13 +268,14 @@ func evaluateMatchResultBet(teamA, teamB string, scoreA, scoreB int, matches []M
 	return "alive"
 }
 
-// evaluateMatchOutcomeLeg returns pending | alive | won | lost for a single
+// evaluateMatchOutcomeLeg returns alive | won | lost for a single
 // "team to win/draw/lose against opponent" prediction. A result can swing until
-// the final whistle, so there is no mid-match bust here.
+// the final whistle, so there is no mid-match bust here. Anything not yet
+// decided is "alive".
 func evaluateMatchOutcomeLeg(team, opponent, outcome string, matches []Match) string {
 	m := findMatch(team, opponent, matches)
 	if m == nil || notStarted(m.Status) {
-		return "pending"
+		return "alive"
 	}
 	if m.Status != "FINISHED" {
 		return "alive"
@@ -327,12 +328,12 @@ func finalContains(teamA, teamB string, matches []Match) bool {
 }
 
 // combineLegStatuses rolls per-leg statuses up into an accumulator status:
-// any lost → lost; all won → won; all pending → pending; otherwise alive.
+// any lost → lost; all won → won; otherwise alive.
 func combineLegStatuses(statuses []string) string {
 	if len(statuses) == 0 {
-		return "pending"
+		return "alive"
 	}
-	allWon, allPending := true, true
+	allWon := true
 	for _, s := range statuses {
 		if s == "lost" {
 			return "lost"
@@ -340,16 +341,9 @@ func combineLegStatuses(statuses []string) string {
 		if s != "won" {
 			allWon = false
 		}
-		if s != "pending" {
-			allPending = false
-		}
 	}
-	switch {
-	case allWon:
+	if allWon {
 		return "won"
-	case allPending:
-		return "pending"
-	default:
-		return "alive"
 	}
+	return "alive"
 }

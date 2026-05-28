@@ -10,14 +10,12 @@
   let { bets }: Props = $props()
 
   const LEG_STATUS_CLASS: Record<LegStatus, string> = {
-    pending: 'leg-pending',
     alive:   'leg-alive',
     won:     'leg-won',
     lost:    'leg-lost',
   }
 
   const LEG_STATUS_LABEL: Record<LegStatus, string> = {
-    pending: '–',
     alive:   '✓',
     won:     '★',
     lost:    '✗',
@@ -30,14 +28,12 @@
   }
 
   const BET_STATUS_CLASS: Record<BetStatus, string> = {
-    pending: 'bet-pending',
     alive:   'bet-alive',
     won:     'bet-won',
     lost:    'bet-lost',
   }
 
   const BET_STATUS_LABEL: Record<BetStatus, string> = {
-    pending: 'Pending',
     alive:   'Alive',
     won:     'Won!',
     lost:    'Bust',
@@ -111,5 +107,4 @@
   .acca-status.bet-alive   { color: var(--leg-alive-fg); }
   .acca-status.bet-lost    { color: var(--leg-lost-fg); }
   .acca-status.bet-won     { color: #b45309; }
-  .acca-status.bet-pending { color: var(--wc-muted); }
 </style>
