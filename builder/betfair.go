@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -17,10 +18,11 @@ import (
 // reads market-implied probabilities from the betting exchange (de-vigged best
 // back prices) for the FIFA World Cup competition.
 //
-// Auth: an interactive login mints a session token used as X-Authentication on
-// every call; KeepAlive extends it. Running unattended on k8s will eventually
-// want Betfair's certificate (bot) login instead — same token semantics, just a
-// different login endpoint — which can slot in behind Login.
+// Auth: a login mints a session token used as X-Authentication on every call;
+// KeepAlive extends it. Two login flows are supported with identical token
+// semantics — interactive username/password (Login) and certificate (bot) login
+// (CertLogin), the latter being the right choice for unattended k8s and for
+// accounts with two-factor auth enabled, which the interactive flow rejects.
 type betfairClient struct {
 	appKey        string
 	token         string
@@ -28,6 +30,7 @@ type betfairClient struct {
 
 	apiURL       string
 	loginURL     string
+	certLoginURL string
 	keepAliveURL string
 
 	http   *http.Client
@@ -37,6 +40,7 @@ type betfairClient struct {
 const (
 	betfairAPIURL       = "https://api.betfair.com/exchange/betting/json-rpc/v1"
 	betfairLoginURL     = "https://identitysso.betfair.com/api/login"
+	betfairCertLoginURL = "https://identitysso-cert.betfair.com/api/certlogin"
 	betfairKeepAliveURL = "https://identitysso.betfair.com/api/keepAlive"
 
 	// The FIFA World Cup competition id on the Betfair Exchange (confirmed via
@@ -56,6 +60,7 @@ func newBetfairClient(appKey string, logger *slog.Logger) *betfairClient {
 		competitionID: betfairWorldCupCompetitionID,
 		apiURL:        betfairAPIURL,
 		loginURL:      betfairLoginURL,
+		certLoginURL:  betfairCertLoginURL,
 		keepAliveURL:  betfairKeepAliveURL,
 		http:          &http.Client{Timeout: 20 * time.Second},
 		logger:        logger,
@@ -96,6 +101,61 @@ func (c *betfairClient) Login(ctx context.Context, username, password string) er
 		return fmt.Errorf("betfair login failed: status=%s error=%s", body.Status, body.Error)
 	}
 	c.token = body.Token
+	return nil
+}
+
+// CertLogin performs Betfair's certificate (bot) login: an mTLS POST that mints a
+// session token without the interactive flow's two-factor restriction. certFile
+// and keyFile are the PEM client certificate and private key registered on your
+// Betfair account (https://identitysso.betfair.com upload). The client cert is
+// presented only for this handshake; subsequent API calls authenticate with the
+// returned token alone.
+func (c *betfairClient) CertLogin(ctx context.Context, username, password, certFile, keyFile string) error {
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		return fmt.Errorf("betfair cert login: load keypair: %w", err)
+	}
+	client := &http.Client{
+		Timeout: c.http.Timeout,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{Certificates: []tls.Certificate{cert}},
+		},
+	}
+	return c.certLoginWith(ctx, client, username, password)
+}
+
+// certLoginWith issues the cert-login request with a caller-supplied client (so
+// the mTLS transport — or a test server's client — is injectable) and parses the
+// response. Note the cert-login endpoint uses sessionToken/loginStatus, distinct
+// from the interactive endpoint's token/status fields.
+func (c *betfairClient) certLoginWith(ctx context.Context, client *http.Client, username, password string) error {
+	form := url.Values{"username": {username}, "password": {password}}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.certLoginURL, strings.NewReader(form.Encode()))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("X-Application", c.appKey)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("User-Agent", betfairUserAgent)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("betfair cert login: %w", err)
+	}
+	defer resp.Body.Close()
+
+	var body struct {
+		SessionToken string `json:"sessionToken"`
+		LoginStatus  string `json:"loginStatus"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		return fmt.Errorf("betfair cert login decode: %w", err)
+	}
+	if body.LoginStatus != "SUCCESS" {
+		return fmt.Errorf("betfair cert login failed: loginStatus=%s", body.LoginStatus)
+	}
+	c.token = body.SessionToken
 	return nil
 }
 

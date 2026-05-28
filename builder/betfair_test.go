@@ -1,9 +1,69 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"io"
+	"log/slog"
 	"math"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
+
+func discardLogger() *slog.Logger {
+	return slog.New(slog.NewTextHandler(io.Discard, nil))
+}
+
+func TestCertLoginWith_ParsesSessionToken(t *testing.T) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if got := r.Header.Get("X-Application"); got != "appkey" {
+			t.Errorf("X-Application header = %q, want appkey", got)
+		}
+		if err := r.ParseForm(); err != nil {
+			t.Errorf("parse form: %v", err)
+		}
+		if u, p := r.PostForm.Get("username"), r.PostForm.Get("password"); u != "user" || p != "pass" {
+			t.Errorf("credentials = (%q,%q), want (user,pass)", u, p)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"sessionToken":"TOKEN123","loginStatus":"SUCCESS"}`)
+	}))
+	defer srv.Close()
+
+	c := newBetfairClient("appkey", discardLogger())
+	c.certLoginURL = srv.URL
+	if err := c.certLoginWith(context.Background(), srv.Client(), "user", "pass"); err != nil {
+		t.Fatalf("certLoginWith: %v", err)
+	}
+	if c.token != "TOKEN123" {
+		t.Fatalf("token = %q, want TOKEN123", c.token)
+	}
+}
+
+func TestCertLoginWith_NonSuccessIsError(t *testing.T) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, `{"loginStatus":"INVALID_USERNAME_OR_PASSWORD"}`)
+	}))
+	defer srv.Close()
+
+	c := newBetfairClient("appkey", discardLogger())
+	c.certLoginURL = srv.URL
+	if err := c.certLoginWith(context.Background(), srv.Client(), "user", "bad"); err == nil {
+		t.Fatal("expected error on non-SUCCESS loginStatus")
+	}
+	if c.token != "" {
+		t.Fatalf("token should stay empty on failure, got %q", c.token)
+	}
+}
+
+func TestCertLogin_MissingKeypairError(t *testing.T) {
+	c := newBetfairClient("appkey", discardLogger())
+	err := c.CertLogin(context.Background(), "user", "pass", "/no/such.crt", "/no/such.key")
+	if err == nil {
+		t.Fatal("expected error when the keypair files are missing")
+	}
+}
 
 func TestParseScoreRunner(t *testing.T) {
 	cases := []struct {

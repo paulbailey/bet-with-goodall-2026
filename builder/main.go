@@ -129,22 +129,34 @@ type oddsBundle struct {
 }
 
 // setupBetfair builds a Betfair odds client when an app key is configured and a
-// session can be established (pre-minted token or interactive login). Returns
-// nil to run results-only; any auth failure is logged and degrades gracefully.
+// session can be established. Auth precedence: a pre-minted token, else
+// certificate (bot) login when cert+key+credentials are present, else
+// interactive login. Returns nil to run results-only; any auth failure is logged
+// and degrades gracefully.
 func setupBetfair(ctx context.Context, env Env, logger *slog.Logger) *betfairClient {
 	if env.BetfairAppKey == "" {
 		logger.Info("betfair odds disabled (no BETFAIR_APP_KEY)")
 		return nil
 	}
 	c := newBetfairClient(env.BetfairAppKey, logger)
+	haveCreds := env.BetfairUsername != "" && env.BetfairPassword != ""
+	haveCert := env.BetfairCertFile != "" && env.BetfairKeyFile != ""
 	switch {
 	case env.BetfairToken != "":
 		c.UseToken(env.BetfairToken)
-	case env.BetfairUsername != "" && env.BetfairPassword != "":
+		logger.Info("betfair auth: session token")
+	case haveCert && haveCreds:
+		if err := c.CertLogin(ctx, env.BetfairUsername, env.BetfairPassword, env.BetfairCertFile, env.BetfairKeyFile); err != nil {
+			logger.Warn("betfair cert login failed; odds disabled", "err", err)
+			return nil
+		}
+		logger.Info("betfair auth: certificate login")
+	case haveCreds:
 		if err := c.Login(ctx, env.BetfairUsername, env.BetfairPassword); err != nil {
 			logger.Warn("betfair login failed; odds disabled", "err", err)
 			return nil
 		}
+		logger.Info("betfair auth: interactive login")
 	default:
 		logger.Warn("BETFAIR_APP_KEY set but no session token or credentials; odds disabled")
 		return nil

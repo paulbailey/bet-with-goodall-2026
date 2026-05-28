@@ -17,11 +17,14 @@ type Env struct {
 
 	// Betfair Exchange odds (all optional). When BetfairAppKey is set the
 	// builder also computes per-bet likelihoods; otherwise it runs results-only.
-	// Auth is either a pre-minted session token or interactive credentials.
+	// Auth precedence: a pre-minted session token, else certificate (bot) login
+	// when cert+key+credentials are present, else interactive credentials.
 	BetfairAppKey   string
 	BetfairToken    string
 	BetfairUsername string
 	BetfairPassword string
+	BetfairCertFile string // PEM client certificate for cert login
+	BetfairKeyFile  string // PEM private key for cert login
 }
 
 func loadEnv() Env {
@@ -34,6 +37,8 @@ func loadEnv() Env {
 		BetfairToken:    os.Getenv("BETFAIR_SESSION_TOKEN"),
 		BetfairUsername: os.Getenv("BETFAIR_USERNAME"),
 		BetfairPassword: os.Getenv("BETFAIR_PASSWORD"),
+		BetfairCertFile: os.Getenv("BETFAIR_CERT_FILE"),
+		BetfairKeyFile:  os.Getenv("BETFAIR_KEY_FILE"),
 	}
 	if env.LocalOutput == "" {
 		env.Bucket = mustEnv("S3_BUCKET")
