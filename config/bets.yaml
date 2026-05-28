@@ -22,70 +22,9 @@ competition_id: WC
 #  L: England, Croatia, Ghana, Panama
 
 bets:
-  - id: bet-1
-    stake: 10.00
-    potential_return: 847.50
-    legs:
-      - group: A
-        team: Mexico
-      - group: C
-        team: Brazil
-      - group: E
-        team: Germany
-      - group: F
-        team: Netherlands
-      - group: H
-        team: Spain
-
-  - id: bet-2
+  - id: bet-paul-bran
     stake: 5.00
-    potential_return: 2340.00
-    legs:
-      - group: A
-        team: South Korea
-      - group: C
-        team: Morocco
-      - group: E
-        team: Ivory Coast
-      - group: F
-        team: Japan
-      - group: J
-        team: Argentina
-
-  - id: bet-3
-    stake: 20.00
-    potential_return: 1260.00
-    legs:
-      - group: C
-        team: Brazil
-      - group: D
-        team: Turkey
-      - group: G
-        team: Belgium
-      - group: I
-        team: France
-      - group: L
-        team: England
-
-  - id: bet-4
-    stake: 2.00
-    potential_return: 5180.00
-    legs:
-      - group: A
-        team: Mexico
-      - group: D
-        team: United States
-      - group: F
-        team: Netherlands
-      - group: H
-        team: Spain
-      - group: K
-        team: Portugal
-
-  # All-favourites group-winner accumulator across every group.
-  - id: bet-5
-    stake: 5.00
-    potential_return: 880.00
+    potential_return: 626.36
     legs:
       - group: A
         team: Mexico
