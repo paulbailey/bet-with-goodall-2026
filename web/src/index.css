@@ -170,15 +170,17 @@ body {
 .leg-icon { display: block; font-size: 0.65rem; margin-top: 0.1rem; opacity: 0.8; }
 .leg-na   { color: var(--wc-border); }
 
-/* Status, stake & return columns */
+/* Status, stake, return & chance columns */
 .col-stake  { white-space: nowrap; font-size: 0.8rem; }
 .col-return { white-space: nowrap; font-weight: 600; font-size: 0.8rem; }
+.col-chance { white-space: nowrap; font-weight: 600; font-size: 0.8rem; }
 .col-status { white-space: nowrap; font-weight: 700; font-size: 0.8rem; }
 
 /* Body-only colour overrides — headers inherit white from thead tr */
 .bet-grid tbody td.col-stake  { color: var(--wc-muted); }
 .bet-grid tbody td.col-return { color: var(--wc-text); }
 .bet-grid tbody td.col-return.return-won { color: #b45309; }
+.bet-grid tbody td.col-chance { color: #6d28d9; }
 
 /* Sticky status column — always visible when table scrolls horizontally */
 .bet-grid th.col-status,
@@ -269,6 +271,7 @@ body {
 
 .bet-card-stake  { color: var(--wc-muted); }
 .bet-card-return { font-weight: 700; flex: 1; }
+.bet-card-chance { font-weight: 600; color: #6d28d9; }
 
 .bet-card-status { font-weight: 700; }
 .bet-card-status.bet-alive   { color: var(--leg-alive-fg); }

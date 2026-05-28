@@ -193,3 +193,45 @@ func TestSimulateTournament_StrongTeamFavoured(t *testing.T) {
 		t.Fatalf("a dominant team should usually win its group, got %.3f", res["A1"].PWinGroup)
 	}
 }
+
+func TestRunTournament_FinalistJointWithinMarginals(t *testing.T) {
+	pairs := [][2]string{{"A1", "B1"}}
+	res, joints := runTournament(fullGroups(), nil, map[string]float64{}, 16000, 314, pairs)
+
+	key, _ := fixtureKey("A1", "B1")
+	jp, ok := joints[key]
+	if !ok {
+		t.Fatalf("joint probability for requested pair not returned")
+	}
+	if jp < 0 || jp > 1 {
+		t.Fatalf("joint probability out of range: %v", jp)
+	}
+	// A joint event can't be likelier than either team reaching the final.
+	mA, mB := res["A1"].PReachFinal, res["B1"].PReachFinal
+	if jp > mA+1e-9 || jp > mB+1e-9 {
+		t.Fatalf("joint (%.4f) exceeds a marginal (A1 %.4f, B1 %.4f)", jp, mA, mB)
+	}
+	// Two cross-group equal teams do sometimes both reach the final.
+	if jp <= 0 {
+		t.Fatalf("expected a positive joint finalist probability, got %.4f", jp)
+	}
+}
+
+func TestRunTournament_StrongPairHigherJoint(t *testing.T) {
+	// Two strong teams from opposite-looking groups should reach the final
+	// together more often than two equal teams would.
+	strength := map[string]float64{"a1": 1.2, "g1": 1.2}
+	pairs := [][2]string{{"A1", "G1"}}
+	_, joints := runTournament(fullGroups(), nil, strength, 16000, 99, pairs)
+	key, _ := fixtureKey("A1", "G1")
+	if joints[key] < 0.03 {
+		t.Fatalf("two strong cross-group teams should pair in the final reasonably often, got %.4f", joints[key])
+	}
+}
+
+func TestRunTournament_NoPairsNoJoints(t *testing.T) {
+	_, joints := runTournament(fullGroups(), nil, map[string]float64{}, 2000, 1, nil)
+	if len(joints) != 0 {
+		t.Fatalf("no requested pairs should yield no joint entries, got %d", len(joints))
+	}
+}

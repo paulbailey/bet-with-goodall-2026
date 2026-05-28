@@ -37,6 +37,16 @@ type ScoreProb struct {
 	Prob      float64
 }
 
+// FixtureScores holds a single fixture's correct-score market: the actual
+// home/away team names (so callers can align a scoreline to either team) plus
+// the per-scoreline probabilities, where each ScoreProb's HomeGoals/AwayGoals
+// are relative to Home/Away.
+type FixtureScores struct {
+	Home   string
+	Away   string
+	Scores []ScoreProb
+}
+
 // OutrightMarket names a market the provider can be asked for.
 type OutrightMarket string
 
@@ -56,10 +66,10 @@ type OddsProvider interface {
 	// GroupWinnerOdds returns, per group letter, the win-the-group selections,
 	// if the provider exposes group-winner markets. Empty if unsupported.
 	GroupWinnerOdds(ctx context.Context) (map[string][]OutrightProb, error)
-	// CorrectScore returns exact-scoreline probabilities keyed by canonical
-	// fixture key (see fixtureKey), if the provider exposes correct-score
-	// markets. Empty if unsupported.
-	CorrectScore(ctx context.Context) (map[string][]ScoreProb, error)
+	// CorrectScore returns each fixture's exact-scoreline market keyed by
+	// canonical fixture key (see fixtureKey), if the provider exposes
+	// correct-score markets. Empty if unsupported.
+	CorrectScore(ctx context.Context) (map[string]FixtureScores, error)
 }
 
 // devig removes a market's overround from a slice of decimal odds, returning

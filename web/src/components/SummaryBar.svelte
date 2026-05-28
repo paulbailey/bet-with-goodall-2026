@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { TournamentState } from '../types'
+  import { money } from '../format'
 
   interface Props {
     data: TournamentState
@@ -34,10 +35,10 @@
   const maxPayout = $derived(data.max_payout?.max_payout ?? null)
   const maxProfit = $derived(data.max_payout?.max_profit ?? null)
 
-  function money(n: number): string {
-    const sign = n < 0 ? '-' : ''
-    return `${sign}£${Math.abs(n).toFixed(2)}`
-  }
+  // Probability-weighted figures from the odds-driven simulator. Absent when no
+  // odds source is configured (older builder output / Betfair unavailable).
+  const expectedPayout = $derived(data.expected?.expected_payout ?? null)
+  const expectedProfit = $derived(data.expected?.expected_profit ?? null)
 </script>
 
 <section class="summary-bar">
@@ -66,6 +67,20 @@
       <span class="summary-label">Max Possible Profit</span>
       <span class="summary-value" class:summary-positive={maxProfit >= 0} class:summary-negative={maxProfit < 0}>
         {money(maxProfit)}
+      </span>
+    </div>
+  {/if}
+  {#if expectedPayout != null}
+    <div class="summary-figure">
+      <span class="summary-label" title="Probability-weighted across all priced bets">Expected Payout</span>
+      <span class="summary-value summary-expected">{money(expectedPayout)}</span>
+    </div>
+  {/if}
+  {#if expectedProfit != null}
+    <div class="summary-figure">
+      <span class="summary-label" title="Expected payout minus total outlay">Expected Profit</span>
+      <span class="summary-value" class:summary-positive={expectedProfit >= 0} class:summary-negative={expectedProfit < 0}>
+        {money(expectedProfit)}
       </span>
     </div>
   {/if}
@@ -107,6 +122,7 @@
 
   .summary-winnings { color: #b45309; }
   .summary-max { color: var(--wc-navy); }
+  .summary-expected { color: #6d28d9; }
   .summary-positive { color: var(--leg-alive-fg); }
   .summary-negative { color: var(--leg-lost-fg); }
 

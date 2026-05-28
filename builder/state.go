@@ -19,6 +19,7 @@ type StateJSON struct {
 	FinalistBets         []FinalistBetJSON         `json:"finalist_bets"`
 	TopScorers           []TopScorerJSON           `json:"top_scorers"`
 	MaxPayout            MaxPayoutJSON             `json:"max_payout"`
+	Expected             *ExpectedJSON             `json:"expected,omitempty"`
 }
 
 type GroupJSON struct {
@@ -44,6 +45,8 @@ type BetJSON struct {
 	Stake           *float64  `json:"stake,omitempty"`
 	PotentialReturn *float64  `json:"potential_return,omitempty"`
 	Status          string    `json:"status"`
+	Probability     *float64  `json:"probability,omitempty"`
+	ExpectedReturn  *float64  `json:"expected_return,omitempty"`
 	Legs            []LegJSON `json:"legs"`
 }
 
@@ -60,6 +63,8 @@ type TopScorerBetJSON struct {
 	Stake           *float64 `json:"stake,omitempty"`
 	PotentialReturn *float64 `json:"potential_return,omitempty"`
 	Status          string   `json:"status"`
+	Probability     *float64 `json:"probability,omitempty"`
+	ExpectedReturn  *float64 `json:"expected_return,omitempty"`
 }
 
 type TournamentWinnerBetJSON struct {
@@ -68,6 +73,8 @@ type TournamentWinnerBetJSON struct {
 	Stake           *float64 `json:"stake,omitempty"`
 	PotentialReturn *float64 `json:"potential_return,omitempty"`
 	Status          string   `json:"status"`
+	Probability     *float64 `json:"probability,omitempty"`
+	ExpectedReturn  *float64 `json:"expected_return,omitempty"`
 }
 
 type MatchResultBetJSON struct {
@@ -81,6 +88,8 @@ type MatchResultBetJSON struct {
 	Stake           *float64 `json:"stake,omitempty"`
 	PotentialReturn *float64 `json:"potential_return,omitempty"`
 	Status          string   `json:"status"`
+	Probability     *float64 `json:"probability,omitempty"`
+	ExpectedReturn  *float64 `json:"expected_return,omitempty"`
 }
 
 type MatchAccaBetJSON struct {
@@ -88,6 +97,8 @@ type MatchAccaBetJSON struct {
 	Stake           *float64              `json:"stake,omitempty"`
 	PotentialReturn *float64              `json:"potential_return,omitempty"`
 	Status          string                `json:"status"`
+	Probability     *float64              `json:"probability,omitempty"`
+	ExpectedReturn  *float64              `json:"expected_return,omitempty"`
 	Legs            []MatchOutcomeLegJSON `json:"legs"`
 }
 
@@ -105,6 +116,8 @@ type FinalistBetJSON struct {
 	Stake           *float64 `json:"stake,omitempty"`
 	PotentialReturn *float64 `json:"potential_return,omitempty"`
 	Status          string   `json:"status"`
+	Probability     *float64 `json:"probability,omitempty"`
+	ExpectedReturn  *float64 `json:"expected_return,omitempty"`
 }
 
 type TopScorerJSON struct {

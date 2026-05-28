@@ -85,15 +85,34 @@ type TournamentSimResult struct {
 // fully seeded (all groups present); otherwise only group-stage figures are
 // populated.
 func simulateTournament(groups []GroupStanding, matches []Match, strength map[string]float64, iterations int, seed int64) map[string]TournamentSimResult {
+	res, _ := runTournament(groups, matches, strength, iterations, seed, nil)
+	return res
+}
+
+// runTournament is the full Monte Carlo engine behind simulateTournament. In
+// addition to per-team marginals it estimates, for each requested team pair, the
+// JOINT probability that both teams reach the final — a figure no single
+// outright market exposes because it depends on the bracket halves (two teams in
+// the same half can never both be finalists). Pairs are keyed by canonical
+// fixture key (see fixtureKey); the returned joint map carries one entry per
+// requested pair (0 if it never happened).
+func runTournament(groups []GroupStanding, matches []Match, strength map[string]float64, iterations int, seed int64, finalistPairs [][2]string) (map[string]TournamentSimResult, map[string]float64) {
 	rng := rand.New(rand.NewSource(seed))
 	results := finishedGroupResults(matches)
 	ratingFor := strengthLookup(strength)
 	thirdsToQualify := thirdsQualifying(len(groups))
 
+	wantPair := make(map[string]bool, len(finalistPairs))
+	for _, p := range finalistPairs {
+		k, _ := fixtureKey(p[0], p[1])
+		wantPair[k] = true
+	}
+
 	win := map[string]int{}
 	qual := map[string]int{}
 	reachFinal := map[string]int{}
 	champion := map[string]int{}
+	jointFinal := map[string]int{}
 
 	for iter := 0; iter < iterations; iter++ {
 		ranked, qualThirds := simulateGroupsOnce(groups, results, ratingFor, thirdsToQualify, rng)
@@ -119,10 +138,15 @@ func simulateTournament(groups []GroupStanding, matches []Match, strength map[st
 				reachFinal[lowerName(f.name)]++
 			}
 		}
+		if len(wantPair) > 0 && finalists[0] != nil && finalists[1] != nil {
+			if k, _ := fixtureKey(finalists[0].name, finalists[1].name); wantPair[k] {
+				jointFinal[k]++
+			}
+		}
 	}
 
-	out := make(map[string]TournamentSimResult)
 	inv := 1.0 / float64(iterations)
+	out := make(map[string]TournamentSimResult)
 	for _, g := range groups {
 		for _, t := range g.Teams {
 			key := lowerName(t.Name)
@@ -134,7 +158,12 @@ func simulateTournament(groups []GroupStanding, matches []Match, strength map[st
 			}
 		}
 	}
-	return out
+
+	joints := make(map[string]float64, len(wantPair))
+	for k := range wantPair {
+		joints[k] = float64(jointFinal[k]) * inv
+	}
+	return out, joints
 }
 
 // buildBracketSlots seeds the qualifiers into the 32 bracket slots in tree

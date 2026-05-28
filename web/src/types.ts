@@ -35,6 +35,8 @@ export interface Bet {
   stake?: number
   potential_return?: number
   status: BetStatus
+  probability?: number
+  expected_return?: number
   legs: BetLeg[]
 }
 
@@ -45,6 +47,8 @@ export interface TopScorerBet {
   stake?: number
   potential_return?: number
   status: TopScorerBetStatus
+  probability?: number
+  expected_return?: number
 }
 
 export interface TournamentWinnerBet {
@@ -53,6 +57,8 @@ export interface TournamentWinnerBet {
   stake?: number
   potential_return?: number
   status: TournamentWinnerBetStatus
+  probability?: number
+  expected_return?: number
 }
 
 export interface TopScorer {
@@ -74,6 +80,8 @@ export interface MatchResultBet {
   stake?: number
   potential_return?: number
   status: BetStatus
+  probability?: number
+  expected_return?: number
 }
 
 export interface MatchOutcomeLeg {
@@ -88,6 +96,8 @@ export interface MatchAccaBet {
   stake?: number
   potential_return?: number
   status: BetStatus
+  probability?: number
+  expected_return?: number
   legs: MatchOutcomeLeg[]
 }
 
@@ -98,6 +108,8 @@ export interface FinalistBet {
   stake?: number
   potential_return?: number
   status: FinalistBetStatus
+  probability?: number
+  expected_return?: number
 }
 
 export interface ConflictBet {
@@ -120,6 +132,13 @@ export interface MaxPayout {
   conflicts: ConflictGroup[]
 }
 
+// Expected is the probability-weighted counterpart to MaxPayout: summing each
+// priced bet's chance × return. Omitted when no odds source is configured.
+export interface Expected {
+  expected_payout: number
+  expected_profit: number
+}
+
 export interface TournamentState {
   updated_at: string
   tournament_phase: TournamentPhase
@@ -132,4 +151,5 @@ export interface TournamentState {
   finalist_bets: FinalistBet[]
   top_scorers: TopScorer[]
   max_payout?: MaxPayout | null
+  expected?: Expected | null
 }

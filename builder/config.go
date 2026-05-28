@@ -14,6 +14,14 @@ type Env struct {
 	S3Key       string
 	BetsFile    string
 	Region      string
+
+	// Betfair Exchange odds (all optional). When BetfairAppKey is set the
+	// builder also computes per-bet likelihoods; otherwise it runs results-only.
+	// Auth is either a pre-minted session token or interactive credentials.
+	BetfairAppKey   string
+	BetfairToken    string
+	BetfairUsername string
+	BetfairPassword string
 }
 
 func loadEnv() Env {
@@ -21,6 +29,11 @@ func loadEnv() Env {
 		APIKey:      mustEnv("FDB_API_KEY"),
 		LocalOutput: os.Getenv("LOCAL_OUTPUT"),
 		BetsFile:    getEnv("BETS_FILE", "/config/bets.yaml"),
+
+		BetfairAppKey:   os.Getenv("BETFAIR_APP_KEY"),
+		BetfairToken:    os.Getenv("BETFAIR_SESSION_TOKEN"),
+		BetfairUsername: os.Getenv("BETFAIR_USERNAME"),
+		BetfairPassword: os.Getenv("BETFAIR_PASSWORD"),
 	}
 	if env.LocalOutput == "" {
 		env.Bucket = mustEnv("S3_BUCKET")

@@ -393,7 +393,7 @@ func (c *betfairClient) GroupWinnerOdds(ctx context.Context) (map[string][]Outri
 // CorrectScore returns exact-scoreline probabilities keyed by canonical fixture
 // key. Non-numeric runners (e.g. "Any Other Home Win") are kept in the de-vig
 // denominator but dropped from the output.
-func (c *betfairClient) CorrectScore(ctx context.Context) (map[string][]ScoreProb, error) {
+func (c *betfairClient) CorrectScore(ctx context.Context) (map[string]FixtureScores, error) {
 	cat, err := c.listMarketCatalogue(ctx, c.wcFilter("CORRECT_SCORE"), 200)
 	if err != nil {
 		return nil, err
@@ -403,7 +403,7 @@ func (c *betfairClient) CorrectScore(ctx context.Context) (map[string][]ScorePro
 		return nil, err
 	}
 
-	out := make(map[string][]ScoreProb)
+	out := make(map[string]FixtureScores)
 	for _, m := range cat {
 		book, ok := books[m.MarketID]
 		if !ok {
@@ -421,7 +421,7 @@ func (c *betfairClient) CorrectScore(ctx context.Context) (map[string][]ScorePro
 			scores = append(scores, ScoreProb{HomeGoals: hg, AwayGoals: ag, Prob: probs[r.SelectionID]})
 		}
 		if len(scores) > 0 {
-			out[key] = scores
+			out[key] = FixtureScores{Home: home, Away: away, Scores: scores}
 		}
 	}
 	return out, nil
