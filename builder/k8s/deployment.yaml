@@ -27,7 +27,7 @@ spec:
             name: bet-builder-config
       containers:
         - name: builder
-          image: ghcr.io/paulbailey/bet-with-goodall-builder:latest
+          image: ghcr.io/paulbailey/bet-with-goodall-builder:sha-e343d7b724533cd0be312cbaa086f259ba859567
           imagePullPolicy: Always
           env:
             - name: AWS_ROLE_ARN
