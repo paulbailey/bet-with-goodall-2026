@@ -23,6 +23,15 @@
       const res = await fetch(`/data/state.json?_=${Date.now()}`)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json: TournamentState = await res.json()
+      // state.json is an external feed; tolerate builder output that omits a
+      // bet section (e.g. an older builder) so the page still renders.
+      json.bets ??= []
+      json.top_scorer_bets ??= []
+      json.tournament_winner_bets ??= []
+      json.match_result_bets ??= []
+      json.match_acca_bets ??= []
+      json.finalist_bets ??= []
+      json.top_scorers ??= []
       if (json.updated_at !== lastUpdatedAt) {
         lastUpdatedAt = json.updated_at
         data = json
