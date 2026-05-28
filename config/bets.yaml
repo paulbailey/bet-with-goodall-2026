@@ -141,6 +141,22 @@ match_result_bets:
     stake: 5.00
     potential_return: 50.00
 
+  - id: mr-2
+    team_a: England
+    score_a: 3
+    team_b: Croatia
+    score_b: 1
+    stake: 5.00
+    potential_return: 50.00
+
+  - id: mr-3
+    team_a: England
+    score_a: 3
+    team_b: Panama
+    score_b: 1
+    stake: 5.00
+    potential_return: 50.00
+
 # Accumulators of match outcomes. Each leg predicts one fixture's result for a
 # nominated team (outcome: win | draw | lose). The acca is bust as soon as any
 # leg is lost. Example: England to win all three of their group games.
