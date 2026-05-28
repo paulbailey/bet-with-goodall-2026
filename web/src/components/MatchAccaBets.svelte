@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { MatchAccaBet, BetStatus, LegStatus, MatchOutcome } from '../types'
   import { getCountry } from '../countries'
+  import { pct } from '../format'
   import Flag from './Flag.svelte'
 
   interface Props {
@@ -63,6 +64,9 @@
           {#if bet.potential_return != null}
             <span class="acca-return">→ £{bet.potential_return.toFixed(2)}</span>
           {/if}
+          {#if bet.probability != null}
+            <span class="acca-chance">{pct(bet.probability)}</span>
+          {/if}
           <span class="acca-status {BET_STATUS_CLASS[bet.status]}">
             {BET_STATUS_LABEL[bet.status]}
           </span>
@@ -103,6 +107,7 @@
   }
   .acca-stake  { color: var(--wc-muted); }
   .acca-return { font-weight: 700; flex: 1; }
+  .acca-chance { font-weight: 600; color: #6d28d9; }
   .acca-status { font-weight: 700; }
   .acca-status.bet-alive   { color: var(--leg-alive-fg); }
   .acca-status.bet-lost    { color: var(--leg-lost-fg); }

@@ -7,6 +7,15 @@ web/dist/
 # Go build cache
 builder/builder
 
+# Local builder output (LOCAL_OUTPUT)
+builder/state.json
+state.json
+
+# Betfair cert-login keypair — never commit private keys or certs
+*.pem
+*.key
+*.crt
+
 # Local env files
 .env
 .env.local

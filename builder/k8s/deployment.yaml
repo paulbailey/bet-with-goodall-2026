@@ -25,6 +25,17 @@ spec:
         - name: config
           configMap:
             name: bet-builder-config
+        # Betfair cert-login keypair, surfaced as files for the builder to read.
+        # optional so the pod still starts in results-only mode (no Betfair secrets).
+        - name: betfair-tls
+          secret:
+            secretName: bet-builder
+            optional: true
+            items:
+              - key: BETFAIR_CERT
+                path: tls.crt
+              - key: BETFAIR_KEY
+                path: tls.key
       containers:
         - name: builder
           image: ghcr.io/paulbailey/bet-with-goodall-builder:sha-721c276f033784f145863331a668464b110b45e6
@@ -43,12 +54,39 @@ spec:
               value: "bet-with-goodall"
             - name: AWS_REGION
               value: "eu-west-2"
+            # Betfair Exchange odds (optional). Marked optional so the pod starts
+            # in results-only mode when these keys aren't synced from Parameter Store.
+            - name: BETFAIR_APP_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: bet-builder
+                  key: BETFAIR_APP_KEY
+                  optional: true
+            - name: BETFAIR_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: bet-builder
+                  key: BETFAIR_USERNAME
+                  optional: true
+            - name: BETFAIR_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: bet-builder
+                  key: BETFAIR_PASSWORD
+                  optional: true
+            - name: BETFAIR_CERT_FILE
+              value: /betfair/tls.crt
+            - name: BETFAIR_KEY_FILE
+              value: /betfair/tls.key
           volumeMounts:
             - name: aws-token
               mountPath: /var/run/secrets/eks.amazonaws.com/serviceaccount
               readOnly: true
             - name: config
               mountPath: /config
+            - name: betfair-tls
+              mountPath: /betfair
+              readOnly: true
           resources:
             requests:
               cpu: 10m

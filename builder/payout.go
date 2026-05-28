@@ -59,11 +59,11 @@ type claim struct {
 }
 
 type payoutNode struct {
-	id     string
-	label  string
-	ret    float64
-	won    bool // status == "won" (forced into the selection)
-	claim  claim
+	id    string
+	label string
+	ret   float64
+	won   bool // status == "won" (forced into the selection)
+	claim claim
 }
 
 func computeMaxPayout(s StateJSON) MaxPayoutJSON {
