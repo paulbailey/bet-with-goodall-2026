@@ -57,6 +57,11 @@ top_scorer_bets:
     team: England
     stake: 5.00
     potential_return: 40.00
+  - id: tsb-2
+    player: "Michael Olise"
+    team: France
+    stake: 5.00
+    potential_return: 205.00
 
 # Bets on the overall tournament winner. A bet is alive until the team is
 # knocked out (4th in group, or loses a knockout match), and wins when the
