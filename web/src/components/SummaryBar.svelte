@@ -57,7 +57,7 @@
   </div>
   {#if maxPayout != null}
     <div class="summary-figure">
-      <span class="summary-label">Max Possible Payout</span>
+      <span class="summary-label">Max Possible Winnings</span>
       <span class="summary-value summary-max">{money(maxPayout)}</span>
     </div>
   {/if}
