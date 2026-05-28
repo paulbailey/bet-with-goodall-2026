@@ -32,6 +32,9 @@ func main() {
 		"bets", len(cfg.Bets),
 		"top_scorer_bets", len(cfg.TopScorerBets),
 		"tournament_winner_bets", len(cfg.TournamentWinnerBets),
+		"match_result_bets", len(cfg.MatchResultBets),
+		"match_acca_bets", len(cfg.MatchAccaBets),
+		"finalist_bets", len(cfg.FinalistBets),
 	)
 
 	provider := newFootballDataClient(env.APIKey, cfg.CompetitionID, logger)

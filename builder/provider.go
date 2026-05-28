@@ -22,13 +22,15 @@ type TeamStats struct {
 }
 
 type Match struct {
-	UtcDate  time.Time
-	Status   string // SCHEDULED | IN_PLAY | PAUSED | FINISHED
-	Stage    string // GROUP_STAGE | LAST_16 | QUARTER_FINALS | ...
-	Group    string // GROUP_A, GROUP_B, ... (empty for knockout rounds)
-	HomeTeam string
-	AwayTeam string
-	Winner   string // HOME_TEAM | AWAY_TEAM | DRAW (empty if unfinished/unknown)
+	UtcDate   time.Time
+	Status    string // SCHEDULED | IN_PLAY | PAUSED | FINISHED
+	Stage     string // GROUP_STAGE | LAST_16 | QUARTER_FINALS | ...
+	Group     string // GROUP_A, GROUP_B, ... (empty for knockout rounds)
+	HomeTeam  string
+	AwayTeam  string
+	Winner    string // HOME_TEAM | AWAY_TEAM | DRAW (empty if unfinished/unknown)
+	HomeScore *int   // nil until the API publishes a score
+	AwayScore *int
 }
 
 type TopScorerEntry struct {

@@ -2,6 +2,8 @@ export type LegStatus = 'pending' | 'alive' | 'won' | 'lost'
 export type TopScorerBetStatus = 'alive' | 'won' | 'lost'
 export type TournamentWinnerBetStatus = 'alive' | 'won' | 'lost'
 export type BetStatus = 'pending' | 'alive' | 'won' | 'lost'
+export type FinalistBetStatus = 'alive' | 'won' | 'lost'
+export type MatchOutcome = 'win' | 'draw' | 'lose'
 export type TournamentPhase = 'pre_tournament' | 'group_stage' | 'knockout' | 'complete'
 
 export interface TeamStanding {
@@ -61,6 +63,43 @@ export interface TopScorer {
   team_eliminated: boolean
 }
 
+export interface MatchResultBet {
+  id: string
+  team_a: string
+  team_b: string
+  score_a: number
+  score_b: number
+  actual_a: number | null
+  actual_b: number | null
+  stake?: number
+  potential_return?: number
+  status: BetStatus
+}
+
+export interface MatchOutcomeLeg {
+  team: string
+  opponent: string
+  outcome: MatchOutcome
+  status: LegStatus
+}
+
+export interface MatchAccaBet {
+  id: string
+  stake?: number
+  potential_return?: number
+  status: BetStatus
+  legs: MatchOutcomeLeg[]
+}
+
+export interface FinalistBet {
+  id: string
+  team_a: string
+  team_b: string
+  stake?: number
+  potential_return?: number
+  status: FinalistBetStatus
+}
+
 export interface TournamentState {
   updated_at: string
   tournament_phase: TournamentPhase
@@ -68,5 +107,8 @@ export interface TournamentState {
   bets: Bet[]
   top_scorer_bets: TopScorerBet[]
   tournament_winner_bets: TournamentWinnerBet[]
+  match_result_bets: MatchResultBet[]
+  match_acca_bets: MatchAccaBet[]
+  finalist_bets: FinalistBet[]
   top_scorers: TopScorer[]
 }

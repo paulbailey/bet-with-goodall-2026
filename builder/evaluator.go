@@ -213,3 +213,143 @@ func didTeamWinFinal(teamName string, matches []Match) bool {
 func teamsMatch(a, b string) bool {
 	return strings.EqualFold(a, b)
 }
+
+// findMatch returns the fixture between two teams in either home/away
+// orientation. In the group stage each pair meets once, and any knockout pair
+// meets once, so the result is unambiguous. Returns nil if no such fixture.
+func findMatch(teamA, teamB string, matches []Match) *Match {
+	for i := range matches {
+		m := &matches[i]
+		if (teamsMatch(m.HomeTeam, teamA) && teamsMatch(m.AwayTeam, teamB)) ||
+			(teamsMatch(m.HomeTeam, teamB) && teamsMatch(m.AwayTeam, teamA)) {
+			return m
+		}
+	}
+	return nil
+}
+
+// teamScores returns the (team, opponent) goals for a match from team's
+// perspective, plus whether scores are populated yet.
+func teamScores(m *Match, team string) (forGoals, againstGoals int, ok bool) {
+	if m.HomeScore == nil || m.AwayScore == nil {
+		return 0, 0, false
+	}
+	if teamsMatch(m.HomeTeam, team) {
+		return *m.HomeScore, *m.AwayScore, true
+	}
+	return *m.AwayScore, *m.HomeScore, true
+}
+
+// evaluateMatchResultBet returns pending | alive | won | lost for an exact
+// scoreline. It flips to "lost" mid-match the moment the scoreline becomes
+// unreachable (goals only ever increase).
+func evaluateMatchResultBet(teamA, teamB string, scoreA, scoreB int, matches []Match) string {
+	m := findMatch(teamA, teamB, matches)
+	if m == nil || notStarted(m.Status) {
+		return "pending"
+	}
+
+	forA, againstA, ok := teamScores(m, teamA)
+	if !ok {
+		return "alive"
+	}
+
+	if m.Status == "FINISHED" {
+		if forA == scoreA && againstA == scoreB {
+			return "won"
+		}
+		return "lost"
+	}
+
+	// In play: unreachable once either side has already scored more than predicted.
+	if forA > scoreA || againstA > scoreB {
+		return "lost"
+	}
+	return "alive"
+}
+
+// evaluateMatchOutcomeLeg returns pending | alive | won | lost for a single
+// "team to win/draw/lose against opponent" prediction. A result can swing until
+// the final whistle, so there is no mid-match bust here.
+func evaluateMatchOutcomeLeg(team, opponent, outcome string, matches []Match) string {
+	m := findMatch(team, opponent, matches)
+	if m == nil || notStarted(m.Status) {
+		return "pending"
+	}
+	if m.Status != "FINISHED" {
+		return "alive"
+	}
+
+	var actual string
+	switch {
+	case m.Winner == "DRAW":
+		actual = "draw"
+	case (teamsMatch(m.HomeTeam, team) && m.Winner == "HOME_TEAM") ||
+		(teamsMatch(m.AwayTeam, team) && m.Winner == "AWAY_TEAM"):
+		actual = "win"
+	default:
+		actual = "lose"
+	}
+
+	if strings.EqualFold(actual, outcome) {
+		return "won"
+	}
+	return "lost"
+}
+
+// evaluateFinalistBet returns alive | won | lost for a predicted final pairing.
+// Lost once either team is knocked out; won once both teams occupy the final.
+func evaluateFinalistBet(teamA, teamB string, groups []GroupStanding, matches []Match) string {
+	for _, team := range []string{teamA, teamB} {
+		if isTeamEliminated(team, groups) || lostKnockoutMatch(team, matches) {
+			return "lost"
+		}
+	}
+	if finalContains(teamA, teamB, matches) {
+		return "won"
+	}
+	return "alive"
+}
+
+// finalContains reports whether the FINAL fixture features both teams. True
+// once the semi-finals populate the final, regardless of whether it's played.
+func finalContains(teamA, teamB string, matches []Match) bool {
+	for _, m := range matches {
+		if m.Stage != "FINAL" {
+			continue
+		}
+		if (teamsMatch(m.HomeTeam, teamA) && teamsMatch(m.AwayTeam, teamB)) ||
+			(teamsMatch(m.HomeTeam, teamB) && teamsMatch(m.AwayTeam, teamA)) {
+			return true
+		}
+	}
+	return false
+}
+
+// combineLegStatuses rolls per-leg statuses up into an accumulator status:
+// any lost → lost; all won → won; all pending → pending; otherwise alive.
+func combineLegStatuses(statuses []string) string {
+	if len(statuses) == 0 {
+		return "pending"
+	}
+	allWon, allPending := true, true
+	for _, s := range statuses {
+		if s == "lost" {
+			return "lost"
+		}
+		if s != "won" {
+			allWon = false
+		}
+		if s != "pending" {
+			allPending = false
+		}
+	}
+	switch {
+	case allWon:
+		return "won"
+	case allPending:
+		return "pending"
+	default:
+		return "alive"
+	}
+}

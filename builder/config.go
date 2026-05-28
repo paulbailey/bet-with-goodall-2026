@@ -51,6 +51,9 @@ type Config struct {
 	Bets                 []BetConfig                 `yaml:"bets"`
 	TopScorerBets        []TopScorerBetConfig        `yaml:"top_scorer_bets"`
 	TournamentWinnerBets []TournamentWinnerBetConfig `yaml:"tournament_winner_bets"`
+	MatchResultBets      []MatchResultBetConfig      `yaml:"match_result_bets"`
+	MatchAccaBets        []MatchAccaBetConfig        `yaml:"match_acca_bets"`
+	FinalistBets         []FinalistBetConfig         `yaml:"finalist_bets"`
 }
 
 type BetConfig struct {
@@ -76,6 +79,44 @@ type TopScorerBetConfig struct {
 type TournamentWinnerBetConfig struct {
 	ID              string  `yaml:"id"`
 	Team            string  `yaml:"team"`
+	Stake           float64 `yaml:"stake"`
+	PotentialReturn float64 `yaml:"potential_return"`
+}
+
+// MatchResultBetConfig predicts an exact scoreline for a single fixture, e.g.
+// "England 3-1 Ghana". Scores are matched by team identity, so the order of
+// team_a/team_b here is independent of the fixture's nominal home/away side.
+type MatchResultBetConfig struct {
+	ID              string  `yaml:"id"`
+	TeamA           string  `yaml:"team_a"`
+	TeamB           string  `yaml:"team_b"`
+	ScoreA          int     `yaml:"score_a"`
+	ScoreB          int     `yaml:"score_b"`
+	Stake           float64 `yaml:"stake"`
+	PotentialReturn float64 `yaml:"potential_return"`
+}
+
+// MatchAccaBetConfig is an accumulator whose legs each predict the outcome of
+// one fixture, e.g. "England to win all three group games".
+type MatchAccaBetConfig struct {
+	ID              string                  `yaml:"id"`
+	Stake           float64                 `yaml:"stake"`
+	PotentialReturn float64                 `yaml:"potential_return"`
+	Legs            []MatchOutcomeLegConfig `yaml:"legs"`
+}
+
+type MatchOutcomeLegConfig struct {
+	Team     string `yaml:"team"`
+	Opponent string `yaml:"opponent"`
+	Outcome  string `yaml:"outcome"` // win | draw | lose
+}
+
+// FinalistBetConfig predicts both teams that reach the final, e.g. "France vs
+// Spain". Won once both teams are confirmed finalists, regardless of who wins.
+type FinalistBetConfig struct {
+	ID              string  `yaml:"id"`
+	TeamA           string  `yaml:"team_a"`
+	TeamB           string  `yaml:"team_b"`
 	Stake           float64 `yaml:"stake"`
 	PotentialReturn float64 `yaml:"potential_return"`
 }

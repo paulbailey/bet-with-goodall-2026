@@ -3,6 +3,9 @@
   import type { TournamentState } from './types'
   import Header from './components/Header.svelte'
   import BetGrid from './components/BetGrid.svelte'
+  import MatchAccaBets from './components/MatchAccaBets.svelte'
+  import MatchResultBets from './components/MatchResultBets.svelte'
+  import FinalistBets from './components/FinalistBets.svelte'
   import TournamentWinnerBets from './components/TournamentWinnerBets.svelte'
   import TopScorerBets from './components/TopScorerBets.svelte'
   import TopScorers from './components/TopScorers.svelte'
@@ -45,6 +48,15 @@
 {:else}
   <main class="app-content">
     <BetGrid bets={data.bets} />
+    {#if data.match_acca_bets.length > 0}
+      <MatchAccaBets bets={data.match_acca_bets} />
+    {/if}
+    {#if data.match_result_bets.length > 0}
+      <MatchResultBets bets={data.match_result_bets} />
+    {/if}
+    {#if data.finalist_bets.length > 0}
+      <FinalistBets bets={data.finalist_bets} />
+    {/if}
     {#if data.tournament_winner_bets.length > 0}
       <TournamentWinnerBets bets={data.tournament_winner_bets} />
     {/if}
