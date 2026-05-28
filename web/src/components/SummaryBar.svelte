@@ -28,6 +28,12 @@
 
   const totalProfit = $derived(totalWinnings - totalOutlay)
 
+  // The builder computes the best-case payout across all bets, respecting that
+  // some bets contradict each other (only one champion, one set of finalists,
+  // etc.) so they can't all win at once. Older builder output may omit it.
+  const maxPayout = $derived(data.max_payout?.max_payout ?? null)
+  const maxProfit = $derived(data.max_payout?.max_profit ?? null)
+
   function money(n: number): string {
     const sign = n < 0 ? '-' : ''
     return `${sign}£${Math.abs(n).toFixed(2)}`
@@ -49,12 +55,26 @@
       {money(totalProfit)}
     </span>
   </div>
+  {#if maxPayout != null}
+    <div class="summary-figure">
+      <span class="summary-label">Max Possible Payout</span>
+      <span class="summary-value summary-max">{money(maxPayout)}</span>
+    </div>
+  {/if}
+  {#if maxProfit != null}
+    <div class="summary-figure">
+      <span class="summary-label">Max Possible Profit</span>
+      <span class="summary-value" class:summary-positive={maxProfit >= 0} class:summary-negative={maxProfit < 0}>
+        {money(maxProfit)}
+      </span>
+    </div>
+  {/if}
 </section>
 
 <style>
   .summary-bar {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 1rem;
   }
 
@@ -86,6 +106,7 @@
   }
 
   .summary-winnings { color: #b45309; }
+  .summary-max { color: var(--wc-navy); }
   .summary-positive { color: var(--leg-alive-fg); }
   .summary-negative { color: var(--leg-lost-fg); }
 

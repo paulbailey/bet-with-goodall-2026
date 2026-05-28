@@ -18,6 +18,7 @@ type StateJSON struct {
 	MatchAccaBets        []MatchAccaBetJSON        `json:"match_acca_bets"`
 	FinalistBets         []FinalistBetJSON         `json:"finalist_bets"`
 	TopScorers           []TopScorerJSON           `json:"top_scorers"`
+	MaxPayout            MaxPayoutJSON             `json:"max_payout"`
 }
 
 type GroupJSON struct {
@@ -115,7 +116,7 @@ type TopScorerJSON struct {
 }
 
 func buildState(cfg *Config, groups []GroupStanding, scorers []TopScorerEntry, matches []Match) StateJSON {
-	return StateJSON{
+	s := StateJSON{
 		UpdatedAt:            time.Now().UTC().Format(time.RFC3339),
 		TournamentPhase:      tournamentPhase(matches),
 		Groups:               buildGroups(groups),
@@ -127,6 +128,8 @@ func buildState(cfg *Config, groups []GroupStanding, scorers []TopScorerEntry, m
 		FinalistBets:         buildFinalistBets(cfg.FinalistBets, groups, matches),
 		TopScorers:           buildTopScorers(scorers, groups),
 	}
+	s.MaxPayout = computeMaxPayout(s)
+	return s
 }
 
 func buildGroups(groups []GroupStanding) map[string]GroupJSON {
