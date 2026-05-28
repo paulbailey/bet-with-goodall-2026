@@ -3,6 +3,7 @@
   import type { TournamentState } from './types'
   import Header from './components/Header.svelte'
   import SummaryBar from './components/SummaryBar.svelte'
+  import MaxPayoutBreakdown from './components/MaxPayoutBreakdown.svelte'
   import BetGrid from './components/BetGrid.svelte'
   import MatchAccaBets from './components/MatchAccaBets.svelte'
   import MatchResultBets from './components/MatchResultBets.svelte'
@@ -32,6 +33,7 @@
       json.match_acca_bets ??= []
       json.finalist_bets ??= []
       json.top_scorers ??= []
+      json.max_payout ??= null
       if (json.updated_at !== lastUpdatedAt) {
         lastUpdatedAt = json.updated_at
         data = json
@@ -58,6 +60,9 @@
 {:else}
   <main class="app-content">
     <SummaryBar {data} />
+    {#if data.max_payout}
+      <MaxPayoutBreakdown maxPayout={data.max_payout} />
+    {/if}
     <BetGrid bets={data.bets} />
     {#if data.match_acca_bets.length > 0}
       <MatchAccaBets bets={data.match_acca_bets} />

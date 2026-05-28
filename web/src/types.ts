@@ -100,6 +100,26 @@ export interface FinalistBet {
   status: FinalistBetStatus
 }
 
+export interface ConflictBet {
+  id: string
+  label: string
+  return: number
+  status: Exclude<BetStatus, 'lost'>
+  chosen: boolean
+}
+
+export interface ConflictGroup {
+  bets: ConflictBet[]
+}
+
+export interface MaxPayout {
+  max_payout: number
+  realised_winnings: number
+  total_outlay: number
+  max_profit: number
+  conflicts: ConflictGroup[]
+}
+
 export interface TournamentState {
   updated_at: string
   tournament_phase: TournamentPhase
@@ -111,4 +131,5 @@ export interface TournamentState {
   match_acca_bets: MatchAccaBet[]
   finalist_bets: FinalistBet[]
   top_scorers: TopScorer[]
+  max_payout?: MaxPayout | null
 }
