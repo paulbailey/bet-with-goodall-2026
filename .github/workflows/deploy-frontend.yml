@@ -52,7 +52,7 @@ jobs:
           audience: sts.amazonaws.com
 
       # Upload content-hashed assets first with a long cache header,
-      # then upload everything else (index.html, data/) with no-cache.
+      # then upload frontend-owned files with no-cache. data/ is builder-owned.
       - name: Sync hashed assets (long cache)
         working-directory: web
         run: |
