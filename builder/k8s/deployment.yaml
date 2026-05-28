@@ -38,7 +38,7 @@ spec:
                 path: tls.key
       containers:
         - name: builder
-          image: ghcr.io/paulbailey/bet-with-goodall-builder:sha-ddeec35cbd77a06cae568898485ca40f00171268
+          image: ghcr.io/paulbailey/bet-with-goodall-builder:sha-1326893ffe9bac5de759de9e25d74fbd8620263e
           imagePullPolicy: Always
           env:
             - name: AWS_ROLE_ARN
