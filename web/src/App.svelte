@@ -48,13 +48,13 @@
 {:else}
   <main class="app-content">
     <BetGrid bets={data.bets} />
-    {#if data.match_acca_bets.length > 0}
+    {#if (data.match_acca_bets?.length ?? 0) > 0}
       <MatchAccaBets bets={data.match_acca_bets} />
     {/if}
-    {#if data.match_result_bets.length > 0}
+    {#if (data.match_result_bets?.length ?? 0) > 0}
       <MatchResultBets bets={data.match_result_bets} />
     {/if}
-    {#if data.finalist_bets.length > 0}
+    {#if (data.finalist_bets?.length ?? 0) > 0}
       <FinalistBets bets={data.finalist_bets} />
     {/if}
     {#if data.tournament_winner_bets.length > 0}
