@@ -111,7 +111,8 @@
   .summary-negative { color: var(--leg-lost-fg); }
 
   @media (max-width: 640px) {
-    .summary-bar { grid-template-columns: 1fr; }
-    .summary-value { font-size: 1.5rem; }
+    .summary-bar { grid-template-columns: repeat(2, 1fr); }
+    .summary-figure { padding: 0.75rem 0.85rem; }
+    .summary-value { font-size: 1.35rem; }
   }
 </style>
