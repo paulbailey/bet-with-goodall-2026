@@ -118,6 +118,7 @@
     color: var(--wc-navy);
     letter-spacing: -0.02em;
     line-height: 1.1;
+    white-space: nowrap;
   }
 
   .summary-winnings { color: #b45309; }

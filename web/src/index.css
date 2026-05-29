@@ -143,7 +143,21 @@ body {
   white-space: nowrap;
 }
 
-.bet-grid th.col-bet-name { text-align: left; min-width: 140px; }
+.bet-grid th.col-bet-name { text-align: left; min-width: 130px; }
+
+/* Bet label pinned to the left edge so it stays as a row header while the leg
+   columns scroll horizontally on narrow viewports — mirrors the sticky Status
+   column on the right. */
+.bet-grid th.col-bet-name,
+.bet-grid td.col-bet-name {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.08);
+}
+.bet-grid thead th.col-bet-name { background: var(--wc-navy); }
+.bet-grid tbody td.col-bet-name { background: var(--wc-white); }
+.bet-row.bet-won td.col-bet-name { background: #fffbeb; }
 
 .bet-grid td {
   padding: 0.6rem 0.75rem;
@@ -158,8 +172,8 @@ body {
 .bet-row.bet-won  { background: #fffbeb; }
 .bet-row:last-child td { border-bottom: none; }
 
-/* Leg cells */
-.leg-cell { min-width: 80px; }
+/* Leg cells — sized for a flag + 3-letter code, so 12 fit without overflow */
+.leg-cell { min-width: 48px; }
 .leg-full  { overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
 
 .leg-alive   { background: var(--leg-alive-bg);   color: var(--leg-alive-fg); }
@@ -171,6 +185,7 @@ body {
 .leg-na   { color: var(--wc-border); }
 
 /* Status, stake, return & chance columns */
+.col-score  { white-space: nowrap; font-weight: 600; font-size: 0.8rem; }
 .col-stake  { white-space: nowrap; font-size: 0.8rem; }
 .col-return { white-space: nowrap; font-weight: 600; font-size: 0.8rem; }
 .col-chance { white-space: nowrap; font-weight: 600; font-size: 0.8rem; }
@@ -204,16 +219,18 @@ body {
 .team-flag  { width: 1.4em; height: 1.05em; margin-right: 0.35rem; }
 .flag-inline { width: 1.2em; height: 0.9em; }
 
-/* ── Leg cell: full name on desktop, flag+TLA on mobile ── */
-.leg-full  { display: block; font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
-.leg-short { display: none; }
+/* ── Leg cell: flag + 3-letter code at every width ──
+   12 full team names never fit a laptop alongside the stake/return/chance/
+   status columns, so the table overflowed and the sticky Status column hid
+   Return and Chance. Flag + TLA keeps every column visible; the full team name
+   stays available on the cell's title tooltip. */
+.leg-full  { display: none; }
+.leg-short { display: block; }
 .leg-flag  { display: block; width: 1.8rem; height: 1.35rem; margin: 0 auto 0.1rem; }
 .leg-code  { display: block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; }
 
-@media (max-width: 768px) {
-  .leg-full  { display: none; }
-  .leg-short { display: block; }
-}
+/* The leg a bet swaps away from the favourite — its distinguishing pick. */
+.leg-pick  { box-shadow: inset 0 0 0 2px var(--wc-gold); font-weight: 700; }
 
 /* ── Mobile bet cards ── */
 .bet-cards { display: none; margin-top: 0.75rem; flex-direction: column; gap: 0.75rem; }
@@ -228,6 +245,13 @@ body {
 
 .bet-card.bet-lost { opacity: 0.65; }
 .bet-card.bet-won  { background: #fffbeb; }
+
+.bet-card-title {
+  padding: 0.6rem 0.75rem 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--wc-navy);
+}
 
 .bet-card-legs {
   display: flex;
@@ -311,6 +335,7 @@ body {
   .bet-grid { font-size: 0.8rem; }
   .bet-grid th { padding: 0.45rem 0.4rem; font-size: 0.6rem; letter-spacing: 0.02em; }
   .bet-grid td { padding: 0.45rem 0.4rem; }
+  .bet-grid .col-score,
   .bet-grid .col-stake,
   .bet-grid .col-return,
   .bet-grid .col-chance,
@@ -332,6 +357,17 @@ body {
   .top-scorers-table td.col-ts-team,
   .scorer-bets-section th.col-ts-team,
   .scorer-bets-section td.col-ts-team { display: none; }
+}
+
+/* Match Result Bets carries the most columns (match, predicted, actual, stake,
+   return, chance, status), so it's the one section that doesn't fit the narrow
+   tile width it tiles into (~390px on desktop, less on phones). Drop the Stake
+   column — a flat per-bet figure, the least useful here — so the more
+   informative Return/Chance fit without a horizontal scroll. It returns
+   automatically if the tile ever gets wider (e.g. fewer sections on the row). */
+@container (max-width: 440px) {
+  .match-result-section th.col-stake,
+  .match-result-section td.col-stake { display: none; }
 }
 
 /* ── Top scorer bets ── */

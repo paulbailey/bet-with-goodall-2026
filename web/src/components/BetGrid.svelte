@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Bet, LegStatus, BetStatus } from '../types'
+  import type { Bet, BetLeg, LegStatus, BetStatus } from '../types'
   import { getCountry } from '../countries'
   import { pct } from '../format'
   import Flag from './Flag.svelte'
@@ -37,6 +37,35 @@
   let allGroups = $derived(
     Array.from(new Set(bets.flatMap((b) => b.legs.map((l) => l.group)))).sort()
   )
+
+  // Every accumulator is a variation on the same favourites: the pick chosen by
+  // the most bets in each group is the "favourite", and the leg(s) where a bet
+  // departs from it are what make that bet unique. We surface those as a row
+  // label and highlight the cell so 20 near-identical rows can be told apart.
+  let favByGroup = $derived.by(() => {
+    const counts: Record<string, Record<string, number>> = {}
+    for (const b of bets) {
+      for (const l of b.legs) {
+        counts[l.group] ??= {}
+        counts[l.group][l.team] = (counts[l.group][l.team] ?? 0) + 1
+      }
+    }
+    const fav: Record<string, string> = {}
+    for (const [g, teams] of Object.entries(counts)) {
+      fav[g] = Object.entries(teams).sort((a, b) => b[1] - a[1])[0][0]
+    }
+    return fav
+  })
+
+  function isPick(leg: BetLeg): boolean {
+    return favByGroup[leg.group] != null && leg.team !== favByGroup[leg.group]
+  }
+
+  function betLabel(bet: Bet): string {
+    const dev = bet.legs.filter(isPick)
+    if (dev.length === 0) return 'Favourites'
+    return dev.map((l) => `${l.group}: ${l.team}`).join(', ')
+  }
 </script>
 
 <section class="bet-grid-section">
@@ -47,6 +76,7 @@
     <table class="bet-grid">
       <thead>
         <tr>
+          <th class="col-bet-name">Bet</th>
           {#each allGroups as g}
             <th class="col-group">Grp {g}</th>
           {/each}
@@ -60,13 +90,14 @@
         {#each bets as bet}
           {@const legByGroup = Object.fromEntries(bet.legs.map((l) => [l.group, l]))}
           <tr class="bet-row {BET_STATUS_CLASS[bet.status]}">
+            <td class="col-bet-name">{betLabel(bet)}</td>
             {#each allGroups as g}
               {@const leg = legByGroup[g]}
               {#if !leg}
                 <td class="leg-cell leg-empty"><span class="leg-na">—</span></td>
               {:else}
                 {@const { fi, code } = getCountry(leg.team)}
-                <td class="leg-cell {STATUS_CLASS[leg.status]}" title={leg.team}>
+                <td class="leg-cell {STATUS_CLASS[leg.status]} {isPick(leg) ? 'leg-pick' : ''}" title={leg.team}>
                   <Flag {fi} class="leg-flag" />
                   <span class="leg-full">{leg.team}</span>
                   <span class="leg-short">
@@ -98,10 +129,11 @@
   <div class="bet-cards">
     {#each bets as bet}
       <div class="bet-card {BET_STATUS_CLASS[bet.status]}">
+        <div class="bet-card-title">{betLabel(bet)}</div>
         <div class="bet-card-legs">
           {#each bet.legs as leg}
             {@const { fi, code } = getCountry(leg.team)}
-            <div class="bet-card-leg {STATUS_CLASS[leg.status]}" title={leg.team}>
+            <div class="bet-card-leg {STATUS_CLASS[leg.status]} {isPick(leg) ? 'leg-pick' : ''}" title={leg.team}>
               <span class="bet-card-leg-group">Grp {leg.group}</span>
               <Flag {fi} class="bet-card-leg-flag" />
               <span class="bet-card-leg-code">{code}</span>
