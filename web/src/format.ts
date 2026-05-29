@@ -1,8 +1,14 @@
 // Shared display formatters so money and probabilities read the same everywhere.
 
+const MONEY_FORMATTER = new Intl.NumberFormat('en-GB', {
+  style: 'currency',
+  currency: 'GBP',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})
+
 export function money(n: number): string {
-  const sign = n < 0 ? '-' : ''
-  return `${sign}£${Math.abs(n).toFixed(2)}`
+  return MONEY_FORMATTER.format(n)
 }
 
 // pct renders a 0–1 probability as a compact, readable percentage. Returns an
@@ -15,6 +21,7 @@ export function pct(p: number | null | undefined): string {
   if (p <= 0) return '0%'
   if (p >= 1) return '100%'
   if (p < 0.01) return '<1%'
+  if (p < 0.001) return '<0.1%'
   if (p > 0.99) return '>99%'
   return `${Math.round(p * 100)}%`
 }

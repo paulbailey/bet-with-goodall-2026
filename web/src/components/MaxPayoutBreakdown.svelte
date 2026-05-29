@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { MaxPayout } from '../types'
+  import { money } from '../format'
 
   interface Props {
     maxPayout: MaxPayout
@@ -9,10 +10,6 @@
   let { maxPayout, labelByBetID = {} }: Props = $props()
 
   const conflicts = $derived(maxPayout.conflicts ?? [])
-
-  function money(n: number): string {
-    return `£${n.toFixed(2)}`
-  }
 
   function displayLabel(label: string): string {
     return label.replace(/\ba[c]c[a]\b/gi, 'accumulator')
@@ -100,6 +97,8 @@
     font-weight: 600;
     font-size: 0.875rem;
     color: var(--wc-text);
+    min-width: 0;
+    overflow-wrap: break-word;
   }
 
   .conflict-return {
