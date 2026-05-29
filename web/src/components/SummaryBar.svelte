@@ -96,7 +96,7 @@
   .summary-figure {
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: 0.35rem;
     background: var(--wc-white);
     border: 1px solid var(--wc-border);
     border-radius: 0.75rem;
@@ -110,6 +110,8 @@
     color: var(--wc-muted);
     text-transform: uppercase;
     letter-spacing: 0.1em;
+    line-height: 1.15;
+    min-height: 1.65rem;
   }
 
   .summary-value {
