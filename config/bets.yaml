@@ -602,6 +602,586 @@ bets:
       - group: L
         team: Ghana
 
+  - id: bet-250-row-25
+    stake: 2.50
+    potential_return: 508.93
+    legs:
+      - group: A
+        team: Czechia
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Brazil
+      - group: D
+        team: United States
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Belgium
+      - group: H
+        team: Spain
+      - group: I
+        team: France
+      - group: J
+        team: Argentina
+      - group: K
+        team: Portugal
+      - group: L
+        team: England
+
+  - id: bet-250-row-26
+    stake: 2.50
+    potential_return: 1781.00
+    legs:
+      - group: A
+        team: Czechia
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Brazil
+      - group: D
+        team: United States
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Belgium
+      - group: H
+        team: Spain
+      - group: I
+        team: France
+      - group: J
+        team: Argentina
+      - group: K
+        team: Portugal
+      - group: L
+        team: Croatia
+
+  - id: bet-250-row-27
+    stake: 2.50
+    potential_return: 3383.60
+    legs:
+      - group: A
+        team: Mexico
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Brazil
+      - group: D
+        team: United States
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Egypt
+      - group: H
+        team: Spain
+      - group: I
+        team: Norway
+      - group: J
+        team: Argentina
+      - group: K
+        team: Portugal
+      - group: L
+        team: England
+
+  - id: bet-250-row-28
+    stake: 2.50
+    potential_return: 14680.91
+    legs:
+      - group: A
+        team: Mexico
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Morocco
+      - group: D
+        team: United States
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Belgium
+      - group: H
+        team: Spain
+      - group: I
+        team: Norway
+      - group: J
+        team: Argentina
+      - group: K
+        team: Portugal
+      - group: L
+        team: Croatia
+
+  - id: bet-250-row-29
+    stake: 2.50
+    potential_return: 8120.64
+    legs:
+      - group: A
+        team: Mexico
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Brazil
+      - group: D
+        team: United States
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Egypt
+      - group: H
+        team: Spain
+      - group: I
+        team: Senegal
+      - group: J
+        team: Argentina
+      - group: K
+        team: Portugal
+      - group: L
+        team: England
+
+  - id: bet-250-row-30
+    stake: 2.50
+    potential_return: 35234.19
+    legs:
+      - group: A
+        team: Mexico
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Morocco
+      - group: D
+        team: United States
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Belgium
+      - group: H
+        team: Spain
+      - group: I
+        team: Senegal
+      - group: J
+        team: Argentina
+      - group: K
+        team: Portugal
+      - group: L
+        team: Croatia
+
+  - id: bet-250-row-31
+    stake: 2.50
+    potential_return: 971.36
+    legs:
+      - group: A
+        team: Mexico
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Brazil
+      - group: D
+        team: Turkey
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Belgium
+      - group: H
+        team: Spain
+      - group: I
+        team: France
+      - group: J
+        team: Argentina
+      - group: K
+        team: Colombia
+      - group: L
+        team: England
+
+  - id: bet-250-row-32
+    stake: 2.50
+    potential_return: 1269.25
+    legs:
+      - group: A
+        team: Mexico
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Brazil
+      - group: D
+        team: Turkey
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Belgium
+      - group: H
+        team: Spain
+      - group: I
+        team: France
+      - group: J
+        team: Argentina
+      - group: K
+        team: Portugal
+      - group: L
+        team: Croatia
+
+  - id: bet-250-row-33
+    stake: 2.50
+    potential_return: 971.36
+    legs:
+      - group: A
+        team: Mexico
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Brazil
+      - group: D
+        team: Turkey
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Belgium
+      - group: H
+        team: Spain
+      - group: I
+        team: Norway
+      - group: J
+        team: Argentina
+      - group: K
+        team: Portugal
+      - group: L
+        team: England
+
+  - id: bet-250-row-34
+    stake: 2.50
+    potential_return: 3399.79
+    legs:
+      - group: A
+        team: Mexico
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Brazil
+      - group: D
+        team: Turkey
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Belgium
+      - group: H
+        team: Spain
+      - group: I
+        team: Norway
+      - group: J
+        team: Argentina
+      - group: K
+        team: Portugal
+      - group: L
+        team: Croatia
+
+  - id: bet-250-row-35
+    stake: 2.50
+    potential_return: 2331.28
+    legs:
+      - group: A
+        team: Mexico
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Brazil
+      - group: D
+        team: Turkey
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Belgium
+      - group: H
+        team: Spain
+      - group: I
+        team: Senegal
+      - group: J
+        team: Argentina
+      - group: K
+        team: Portugal
+      - group: L
+        team: England
+
+  - id: bet-250-row-36
+    stake: 2.50
+    potential_return: 8159.49
+    legs:
+      - group: A
+        team: Mexico
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Brazil
+      - group: D
+        team: Turkey
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Belgium
+      - group: H
+        team: Spain
+      - group: I
+        team: Senegal
+      - group: J
+        team: Argentina
+      - group: K
+        team: Portugal
+      - group: L
+        team: Croatia
+
+  - id: bet-250-row-37
+    stake: 2.50
+    potential_return: 626.38
+    legs:
+      - group: A
+        team: Mexico
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Brazil
+      - group: D
+        team: Paraguay
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Belgium
+      - group: H
+        team: Spain
+      - group: I
+        team: France
+      - group: J
+        team: Argentina
+      - group: K
+        team: Portugal
+      - group: L
+        team: England
+
+  - id: bet-250-row-38
+    stake: 2.50
+    potential_return: 1054.96
+    legs:
+      - group: A
+        team: Mexico
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Brazil
+      - group: D
+        team: Australia
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Belgium
+      - group: H
+        team: Spain
+      - group: I
+        team: France
+      - group: J
+        team: Argentina
+      - group: K
+        team: Portugal
+      - group: L
+        team: England
+
+  - id: bet-250-row-39
+    stake: 2.50
+    potential_return: 2544.69
+    legs:
+      - group: A
+        team: Czechia
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Morocco
+      - group: D
+        team: United States
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Belgium
+      - group: H
+        team: Spain
+      - group: I
+        team: France
+      - group: J
+        team: Argentina
+      - group: K
+        team: Portugal
+      - group: L
+        team: England
+
+  - id: bet-250-row-40
+    stake: 2.50
+    potential_return: 2820.56
+    legs:
+      - group: A
+        team: Mexico
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Brazil
+      - group: D
+        team: United States
+      - group: E
+        team: Ecuador
+      - group: F
+        team: Japan
+      - group: G
+        team: Belgium
+      - group: H
+        team: Spain
+      - group: I
+        team: France
+      - group: J
+        team: Argentina
+      - group: K
+        team: Portugal
+      - group: L
+        team: England
+
+  - id: bet-250-row-41
+    stake: 2.50
+    potential_return: 3383.60
+    legs:
+      - group: A
+        team: Mexico
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Brazil
+      - group: D
+        team: United States
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Egypt
+      - group: H
+        team: Spain
+      - group: I
+        team: France
+      - group: J
+        team: Argentina
+      - group: K
+        team: Colombia
+      - group: L
+        team: England
+
+  - id: bet-250-row-42
+    stake: 2.50
+    potential_return: 2356.19
+    legs:
+      - group: A
+        team: Mexico
+      - group: B
+        team: Canada
+      - group: C
+        team: Brazil
+      - group: D
+        team: United States
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Belgium
+      - group: H
+        team: Uruguay
+      - group: I
+        team: France
+      - group: J
+        team: Argentina
+      - group: K
+        team: Portugal
+      - group: L
+        team: England
+
+  - id: bet-250-row-43
+    stake: 2.50
+    potential_return: 11495.09
+    legs:
+      - group: A
+        team: Czechia
+      - group: B
+        team: Canada
+      - group: C
+        team: Brazil
+      - group: D
+        team: Turkey
+      - group: E
+        team: Germany
+      - group: F
+        team: Netherlands
+      - group: G
+        team: Egypt
+      - group: H
+        team: Spain
+      - group: I
+        team: France
+      - group: J
+        team: Argentina
+      - group: K
+        team: Colombia
+      - group: L
+        team: England
+
+  - id: bet-250-row-44
+    stake: 2.50
+    potential_return: 58174.20
+    legs:
+      - group: A
+        team: Mexico
+      - group: B
+        team: Switzerland
+      - group: C
+        team: Morocco
+      - group: D
+        team: United States
+      - group: E
+        team: Ecuador
+      - group: F
+        team: Japan
+      - group: G
+        team: Belgium
+      - group: H
+        team: Spain
+      - group: I
+        team: France
+      - group: J
+        team: Austria
+      - group: K
+        team: Portugal
+      - group: L
+        team: England
+
 top_scorer_bets:
   - id: tsb-1
     player: "Harry Kane"
