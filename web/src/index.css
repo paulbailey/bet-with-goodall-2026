@@ -283,25 +283,55 @@ body {
   .bet-cards                         { display: flex; }
 }
 
-/* ── Tournament winner bets ── */
-.winner-bets-section .bet-grid-scroll { max-width: 600px; }
-
-/* ── Scorer panels (side-by-side) ── */
-.scorer-panels {
+/* ── Bet sections: responsive flex tiling ──
+   The narrower bet types after the group accumulator (match accas, match
+   results, finalists, tournament winner, top-scorer bets and the top-scorer
+   leaderboard) tile side-by-side to fill the width on desktop and wrap down to
+   a single column on small screens — instead of each sitting full-width with a
+   lot of dead space to the right. Each tile is a query container, so its table
+   compacts based on the tile's own width (see the @container rules below)
+   rather than the viewport width. */
+.bet-sections {
   display: flex;
-  gap: 1.5rem;
+  flex-wrap: wrap;
   align-items: flex-start;
+  gap: 2rem;
 }
 
-.scorer-panels > * { flex: 1; min-width: 0; }
+.bet-sections > * {
+  flex: 1 1 340px;
+  min-width: 0;
+  container-type: inline-size;
+}
 
-/* The bets panel sizes to its content rather than growing to fill, but must
-   still be allowed to shrink (flex-shrink: 1) so a wide table can never push
-   the whole page wider than the viewport. */
-.scorer-bets-section { flex: 0 1 auto; min-width: 0; }
+/* Compact a bet table when its tile is narrow — small desktop tiles as well as
+   any phone-width tile — so it fits without a horizontal scrollbar. The
+   team/player/match columns wrap instead of forcing the table wide. */
+@container (max-width: 520px) {
+  .bet-grid { font-size: 0.8rem; }
+  .bet-grid th { padding: 0.45rem 0.4rem; font-size: 0.6rem; letter-spacing: 0.02em; }
+  .bet-grid td { padding: 0.45rem 0.4rem; }
+  .bet-grid .col-stake,
+  .bet-grid .col-return,
+  .bet-grid .col-chance,
+  .bet-grid .col-status { font-size: 0.74rem; }
 
-@media (max-width: 900px) {
-  .scorer-panels { flex-direction: column; }
+  .bet-grid .col-ts-team,
+  .bet-grid .col-ts-player { white-space: normal; }
+  .bet-grid td.col-ts-team { font-size: 0.74rem; }
+
+  .top-scorers-table { font-size: 0.8rem; }
+  .top-scorers-table th { padding: 0.45rem 0.4rem; font-size: 0.6rem; }
+  .top-scorers-table td { padding: 0.45rem 0.4rem; }
+  .top-scorers-table td.col-ts-player { white-space: normal; }
+}
+
+/* In a very narrow tile, drop the secondary "Team" column to make room. */
+@container (max-width: 360px) {
+  .top-scorers-table th.col-ts-team,
+  .top-scorers-table td.col-ts-team,
+  .scorer-bets-section th.col-ts-team,
+  .scorer-bets-section td.col-ts-team { display: none; }
 }
 
 /* ── Top scorer bets ── */
@@ -352,13 +382,6 @@ td.col-ts-team  { color: var(--wc-muted); font-size: 0.8rem; }
 .top-scorers-table td.col-goals    { font-weight: 700; color: var(--wc-navy); }
 .top-scorers-table td.col-ts-player { text-align: left; font-weight: 600; }
 .top-scorers-table td.col-ts-team  { text-align: left; color: var(--wc-muted); font-size: 0.8rem; }
-
-@media (max-width: 768px) {
-  .top-scorers-table th.col-ts-team,
-  .top-scorers-table td.col-ts-team,
-  .scorer-bets-section th.col-ts-team,
-  .scorer-bets-section td.col-ts-team { display: none; }
-}
 
 .scorer-eliminated td { opacity: 0.45; }
 .scorer-eliminated td.col-ts-player::after {
@@ -460,26 +483,5 @@ td.col-ts-team  { color: var(--wc-muted); font-size: 0.8rem; }
   .header-title  { font-size: 1.15rem; }
   .app-content   { padding: 1rem; gap: 1.5rem; }
   .standings-grid { grid-template-columns: 1fr; }
-
-  /* Compact the bet tables so they fit the viewport without a horizontal
-     scrollbar. Tighter padding + smaller type, and the team/player/match
-     columns are allowed to wrap instead of forcing the table wide. The
-     .bet-grid-scroll wrapper keeps overflow-x:auto as a last-resort safety
-     net for the widest tables on the very smallest phones. */
-  .bet-grid { font-size: 0.78rem; }
-  .bet-grid th { padding: 0.45rem 0.35rem; font-size: 0.6rem; letter-spacing: 0.02em; }
-  .bet-grid td { padding: 0.45rem 0.35rem; }
-  .col-stake, .col-return, .col-chance, .col-status { font-size: 0.72rem; }
-
-  .bet-grid .col-ts-team,
-  .bet-grid .col-ts-player,
-  .bet-grid .col-bet-name { white-space: normal; }
-  .bet-grid td.col-ts-team { font-size: 0.72rem; }
-
-  /* Top scorers table: same compacting; the team column is already hidden at
-     this width (rule above), so #/Player/Goals/Games fit comfortably. */
-  .top-scorers-table { font-size: 0.8rem; }
-  .top-scorers-table th { padding: 0.45rem 0.4rem; font-size: 0.6rem; }
-  .top-scorers-table td { padding: 0.45rem 0.4rem; }
-  .top-scorers-table td.col-ts-player { white-space: normal; }
+  .bet-sections  { gap: 1.5rem; }
 }
