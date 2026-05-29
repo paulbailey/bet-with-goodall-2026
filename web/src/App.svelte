@@ -67,28 +67,28 @@
       <!-- <MaxPayoutBreakdown maxPayout={data.max_payout} /> -->
     {/if}
     <BetGrid bets={data.bets} />
-    {#if data.match_acca_bets.length > 0}
-      <MatchAccaBets bets={data.match_acca_bets} />
-    {/if}
-    {#if data.match_result_bets.length > 0}
-      <MatchResultBets bets={data.match_result_bets} />
-    {/if}
-    {#if data.finalist_bets.length > 0}
-      <FinalistBets bets={data.finalist_bets} />
-    {/if}
-    {#if data.tournament_winner_bets.length > 0}
-      <TournamentWinnerBets bets={data.tournament_winner_bets} />
-    {/if}
-    {#if data.top_scorer_bets.length > 0 || data.top_scorers.length > 0}
-      <div class="scorer-panels">
-        {#if data.top_scorer_bets.length > 0}
-          <TopScorerBets bets={data.top_scorer_bets} />
-        {/if}
-        {#if data.top_scorers.length > 0}
-          <TopScorers scorers={data.top_scorers} bets={data.top_scorer_bets} />
-        {/if}
-      </div>
-    {/if}
+    <!-- The narrower bet types tile side-by-side to fill the width on desktop
+         and wrap to a single column on small screens. -->
+    <div class="bet-sections">
+      {#if data.match_acca_bets.length > 0}
+        <MatchAccaBets bets={data.match_acca_bets} />
+      {/if}
+      {#if data.match_result_bets.length > 0}
+        <MatchResultBets bets={data.match_result_bets} />
+      {/if}
+      {#if data.finalist_bets.length > 0}
+        <FinalistBets bets={data.finalist_bets} />
+      {/if}
+      {#if data.tournament_winner_bets.length > 0}
+        <TournamentWinnerBets bets={data.tournament_winner_bets} />
+      {/if}
+      {#if data.top_scorer_bets.length > 0}
+        <TopScorerBets bets={data.top_scorer_bets} />
+      {/if}
+      {#if data.top_scorers.length > 0}
+        <TopScorers scorers={data.top_scorers} bets={data.top_scorer_bets} />
+      {/if}
+    </div>
     <GroupStandings groups={data.groups} />
   </main>
 {/if}
