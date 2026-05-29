@@ -3,7 +3,7 @@
   import type { TournamentState } from "./types";
   import Header from "./components/Header.svelte";
   import SummaryBar from "./components/SummaryBar.svelte";
-  import MaxPayoutBreakdown from "./components/MaxPayoutBreakdown.svelte";
+  import MaxPayoutPage from "./components/MaxPayoutPage.svelte";
   import BetGrid from "./components/BetGrid.svelte";
   import MatchAccaBets from "./components/MatchAccaBets.svelte";
   import MatchResultBets from "./components/MatchResultBets.svelte";
@@ -14,10 +14,41 @@
   import GroupStandings from "./components/GroupStandings.svelte";
 
   const POLL_INTERVAL_MS = 60_000;
+  type AppRoute = "/" | "/max-payout";
 
   let data = $state<TournamentState | null>(null);
   let error = $state<string | null>(null);
+  let route = $state<AppRoute>("/");
   let lastUpdatedAt: string | null = null;
+
+  function routeFromPath(pathname: string): AppRoute {
+    const cleanPath = pathname.replace(/\/+$/, "") || "/";
+    return cleanPath === "/max-payout" ? "/max-payout" : "/";
+  }
+
+  function syncRoute() {
+    route = routeFromPath(window.location.pathname);
+  }
+
+  function navigate(event: MouseEvent, to: AppRoute) {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    if (window.location.pathname !== to) {
+      history.pushState(null, "", to);
+    }
+    route = to;
+    window.scrollTo({ top: 0 });
+  }
 
   async function fetchState() {
     try {
@@ -45,9 +76,14 @@
   }
 
   onMount(() => {
+    syncRoute();
+    window.addEventListener("popstate", syncRoute);
     fetchState();
     const id = setInterval(fetchState, POLL_INTERVAL_MS);
-    return () => clearInterval(id);
+    return () => {
+      clearInterval(id);
+      window.removeEventListener("popstate", syncRoute);
+    };
   });
 </script>
 
@@ -61,34 +97,35 @@
 {:else if !data}
   <p class="state-message">Loading…</p>
 {:else}
-  <main class="app-content">
-    <SummaryBar {data} />
-    {#if data.max_payout}
-      <!-- <MaxPayoutBreakdown maxPayout={data.max_payout} /> -->
-    {/if}
-    <BetGrid bets={data.bets} />
-    <!-- The narrower bet types tile side-by-side to fill the width on desktop
-         and wrap to a single column on small screens. -->
-    <div class="bet-sections">
-      {#if data.match_acca_bets.length > 0}
-        <MatchAccaBets bets={data.match_acca_bets} />
-      {/if}
-      {#if data.match_result_bets.length > 0}
-        <MatchResultBets bets={data.match_result_bets} />
-      {/if}
-      {#if data.finalist_bets.length > 0}
-        <FinalistBets bets={data.finalist_bets} />
-      {/if}
-      {#if data.tournament_winner_bets.length > 0}
-        <TournamentWinnerBets bets={data.tournament_winner_bets} />
-      {/if}
-      {#if data.top_scorer_bets.length > 0}
-        <TopScorerBets bets={data.top_scorer_bets} />
-      {/if}
-      {#if data.top_scorers.length > 0}
-        <TopScorers scorers={data.top_scorers} bets={data.top_scorer_bets} />
-      {/if}
-    </div>
-    <GroupStandings groups={data.groups} />
-  </main>
+  {#if route === "/max-payout"}
+    <MaxPayoutPage {data} onNavigate={navigate} />
+  {:else}
+    <main class="app-content">
+      <SummaryBar {data} onNavigate={navigate} />
+      <BetGrid bets={data.bets} />
+      <!-- The narrower bet types tile side-by-side to fill the width on desktop
+           and wrap to a single column on small screens. -->
+      <div class="bet-sections">
+        {#if data.match_acca_bets.length > 0}
+          <MatchAccaBets bets={data.match_acca_bets} />
+        {/if}
+        {#if data.match_result_bets.length > 0}
+          <MatchResultBets bets={data.match_result_bets} />
+        {/if}
+        {#if data.finalist_bets.length > 0}
+          <FinalistBets bets={data.finalist_bets} />
+        {/if}
+        {#if data.tournament_winner_bets.length > 0}
+          <TournamentWinnerBets bets={data.tournament_winner_bets} />
+        {/if}
+        {#if data.top_scorer_bets.length > 0}
+          <TopScorerBets bets={data.top_scorer_bets} />
+        {/if}
+        {#if data.top_scorers.length > 0}
+          <TopScorers scorers={data.top_scorers} bets={data.top_scorer_bets} />
+        {/if}
+      </div>
+      <GroupStandings groups={data.groups} />
+    </main>
+  {/if}
 {/if}
