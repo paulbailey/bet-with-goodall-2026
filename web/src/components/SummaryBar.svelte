@@ -2,11 +2,14 @@
   import type { TournamentState } from '../types'
   import { money } from '../format'
 
+  type AppRoute = '/' | '/max-payout'
+
   interface Props {
     data: TournamentState
+    onNavigate?: (event: MouseEvent, to: AppRoute) => void
   }
 
-  let { data }: Props = $props()
+  let { data, onNavigate }: Props = $props()
 
   const allBets = $derived([
     ...data.bets,
@@ -57,18 +60,28 @@
     </span>
   </div>
   {#if maxPayout != null}
-    <div class="summary-figure">
+    <a
+      class="summary-figure summary-link"
+      href="/max-payout"
+      aria-label={`View bets required for max possible winnings of ${money(maxPayout)}`}
+      onclick={(event) => onNavigate?.(event, '/max-payout')}
+    >
       <span class="summary-label">Max Possible Winnings</span>
       <span class="summary-value summary-max">{money(maxPayout)}</span>
-    </div>
+    </a>
   {/if}
   {#if maxProfit != null}
-    <div class="summary-figure">
+    <a
+      class="summary-figure summary-link"
+      href="/max-payout"
+      aria-label={`View bets required for max possible profit of ${money(maxProfit)}`}
+      onclick={(event) => onNavigate?.(event, '/max-payout')}
+    >
       <span class="summary-label">Max Possible Profit</span>
       <span class="summary-value" class:summary-positive={maxProfit >= 0} class:summary-negative={maxProfit < 0}>
         {money(maxProfit)}
       </span>
-    </div>
+    </a>
   {/if}
   {#if expectedPayout != null}
     <div class="summary-figure">
@@ -102,6 +115,25 @@
     border-radius: 0.75rem;
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
     padding: 1rem 1.25rem;
+  }
+
+  .summary-link {
+    color: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+  }
+
+  .summary-link:hover,
+  .summary-link:focus-visible {
+    border-color: var(--wc-navy);
+    box-shadow: 0 4px 14px rgba(0, 48, 135, 0.16);
+    transform: translateY(-1px);
+  }
+
+  .summary-link:focus-visible {
+    outline: 3px solid rgba(0, 48, 135, 0.25);
+    outline-offset: 2px;
   }
 
   .summary-label {
