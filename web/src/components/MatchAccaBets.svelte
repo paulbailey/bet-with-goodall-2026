@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { MatchAccaBet, BetStatus, LegStatus, MatchOutcome } from '../types'
   import { getCountry } from '../countries'
-  import { pct } from '../format'
+  import { money, pct } from '../format'
   import Flag from './Flag.svelte'
 
   interface Props {
@@ -59,10 +59,10 @@
         </div>
         <div class="acca-footer">
           {#if bet.stake != null}
-            <span class="acca-stake">£{bet.stake.toFixed(2)}</span>
+            <span class="acca-stake">{money(bet.stake)}</span>
           {/if}
           {#if bet.potential_return != null}
-            <span class="acca-return">→ £{bet.potential_return.toFixed(2)}</span>
+            <span class="acca-return">→ {money(bet.potential_return)}</span>
           {/if}
           {#if bet.probability != null}
             <span class="acca-chance">{pct(bet.probability)}</span>

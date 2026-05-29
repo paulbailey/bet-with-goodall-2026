@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { FinalistBet, FinalistBetStatus } from '../types'
   import { getCountry } from '../countries'
-  import { pct } from '../format'
+  import { money, pct } from '../format'
   import Flag from './Flag.svelte'
 
   interface Props {
@@ -47,12 +47,12 @@
               <Flag fi={b.fi} class="team-flag" />{bet.team_b}
             </td>
             <td class="col-stake">
-              {bet.stake != null ? `£${bet.stake.toFixed(2)}` : '—'}
+              {bet.stake != null ? money(bet.stake) : '—'}
             </td>
             <td class="col-return {bet.status === 'won' ? 'return-won' : ''}">
-              {bet.potential_return != null ? `£${bet.potential_return.toFixed(2)}` : '—'}
+              {bet.potential_return != null ? money(bet.potential_return) : '—'}
             </td>
-            <td class="col-chance" title={bet.expected_return != null ? `Expected return £${bet.expected_return.toFixed(2)}` : ''}>
+            <td class="col-chance" title={bet.expected_return != null ? `Expected return ${money(bet.expected_return)}` : ''}>
               {pct(bet.probability)}
             </td>
             <td class="col-status status-cell {STATUS_CLASS[bet.status]}">

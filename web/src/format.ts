@@ -1,14 +1,21 @@
 // Shared display formatters so money and probabilities read the same everywhere.
 
-const MONEY_FORMATTER = new Intl.NumberFormat('en-GB', {
+const MONEY_WITH_PENCE = new Intl.NumberFormat('en-GB', {
   style: 'currency',
   currency: 'GBP',
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 })
 
+const MONEY_WITHOUT_PENCE = new Intl.NumberFormat('en-GB', {
+  style: 'currency',
+  currency: 'GBP',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+})
+
 export function money(n: number): string {
-  return MONEY_FORMATTER.format(n)
+  return Math.abs(n) >= 1000 ? MONEY_WITHOUT_PENCE.format(n) : MONEY_WITH_PENCE.format(n)
 }
 
 // pct renders a 0–1 probability as a compact, readable percentage. Returns an
