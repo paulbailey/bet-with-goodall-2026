@@ -3,14 +3,23 @@
 
   interface Props {
     maxPayout: MaxPayout
+    labelByBetID?: Record<string, string>
   }
 
-  let { maxPayout }: Props = $props()
+  let { maxPayout, labelByBetID = {} }: Props = $props()
 
   const conflicts = $derived(maxPayout.conflicts ?? [])
 
   function money(n: number): string {
     return `£${n.toFixed(2)}`
+  }
+
+  function displayLabel(label: string): string {
+    return label.replace(/\ba[c]c[a]\b/gi, 'accumulator')
+  }
+
+  function betLabel(id: string, fallback: string): string {
+    return labelByBetID[id] ?? displayLabel(fallback)
   }
 </script>
 
@@ -28,7 +37,7 @@
             <div class="conflict-bet" class:dropped={!bet.chosen}>
               <span class="conflict-mark" aria-hidden="true">{bet.chosen ? '✓' : '✕'}</span>
               <span class="conflict-label">
-                {bet.label}
+                {betLabel(bet.id, bet.label)}
                 {#if bet.status === 'won'}<span class="conflict-won-tag">won</span>{/if}
               </span>
               <span class="conflict-return">{money(bet.return)}</span>

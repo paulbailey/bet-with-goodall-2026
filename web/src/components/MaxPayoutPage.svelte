@@ -65,6 +65,21 @@
     return ids
   })
 
+  const favByGroup = $derived.by(() => {
+    const counts: Record<string, Record<string, number>> = {}
+    for (const bet of data.bets) {
+      for (const leg of bet.legs) {
+        counts[leg.group] ??= {}
+        counts[leg.group][leg.team] = (counts[leg.group][leg.team] ?? 0) + 1
+      }
+    }
+
+    const fav: Record<string, string> = {}
+    for (const [group, teams] of Object.entries(counts)) {
+      fav[group] = Object.entries(teams).sort((a, b) => b[1] - a[1])[0][0]
+    }
+    return fav
+  })
   const selectedGroups = $derived.by(() => {
     if (!maxPayout) return []
 
@@ -76,6 +91,16 @@
     addGroup(groups, 'Tournament Winner Bets', data.tournament_winner_bets, buildTournamentWinnerBet)
     addGroup(groups, 'Top Scorer Bets', data.top_scorer_bets, buildTopScorerBet)
     return groups
+  })
+  const labelByBetID = $derived.by(() => {
+    const labels: Record<string, string> = {}
+    for (const bet of data.bets) labels[bet.id] = groupWinnerBetTitle(bet)
+    for (const bet of data.match_acca_bets) labels[bet.id] = matchAccumulatorBetTitle(bet)
+    for (const bet of data.match_result_bets) labels[bet.id] = matchResultBetTitle(bet)
+    for (const bet of data.finalist_bets) labels[bet.id] = finalistBetTitle(bet)
+    for (const bet of data.tournament_winner_bets) labels[bet.id] = tournamentWinnerBetTitle(bet)
+    for (const bet of data.top_scorer_bets) labels[bet.id] = topScorerBetTitle(bet)
+    return labels
   })
 
   const selectedCount = $derived(
@@ -136,7 +161,7 @@
   function buildGroupWinnerBet(bet: Bet): SelectedBet {
     return buildBaseBet(
       bet,
-      `Group-winner acca (${bet.legs.length} legs)`,
+      groupWinnerBetTitle(bet),
       bet.legs.map((leg) => ({
         label: `Group ${leg.group}: ${leg.team}`,
         teams: [leg.team],
@@ -148,7 +173,7 @@
   function buildMatchAccaBet(bet: MatchAccaBet): SelectedBet {
     return buildBaseBet(
       bet,
-      `Match acca (${bet.legs.length} legs)`,
+      matchAccumulatorBetTitle(bet),
       bet.legs.map((leg) => ({
         label: `${leg.team} ${OUTCOME_LABEL[leg.outcome]} ${leg.opponent}`,
         teams: [leg.team, leg.opponent],
@@ -160,7 +185,7 @@
   function buildMatchResultBet(bet: MatchResultBet): SelectedBet {
     return buildBaseBet(
       bet,
-      `${bet.team_a} ${bet.score_a}-${bet.score_b} ${bet.team_b}`,
+      matchResultBetTitle(bet),
       [{
         label: `${bet.team_a} ${bet.score_a}-${bet.score_b} ${bet.team_b}`,
         teams: [bet.team_a, bet.team_b],
@@ -172,7 +197,7 @@
   function buildFinalistBet(bet: FinalistBet): SelectedBet {
     return buildBaseBet(
       bet,
-      `${bet.team_a} and ${bet.team_b} to reach the final`,
+      finalistBetTitle(bet),
       [{
         label: `${bet.team_a} and ${bet.team_b} reach the final`,
         teams: [bet.team_a, bet.team_b],
@@ -184,7 +209,7 @@
   function buildTournamentWinnerBet(bet: TournamentWinnerBet): SelectedBet {
     return buildBaseBet(
       bet,
-      `${bet.team} to win the tournament`,
+      tournamentWinnerBetTitle(bet),
       [{
         label: `${bet.team} wins the tournament`,
         teams: [bet.team],
@@ -196,13 +221,43 @@
   function buildTopScorerBet(bet: TopScorerBet): SelectedBet {
     return buildBaseBet(
       bet,
-      `${bet.player} top scorer`,
+      topScorerBetTitle(bet),
       [{
         label: `${bet.player} finishes top scorer`,
         teams: [bet.team],
         status: liveStatus(bet.status),
       }]
     )
+  }
+
+  function isGroupPick(leg: Bet['legs'][number]): boolean {
+    return favByGroup[leg.group] != null && leg.team !== favByGroup[leg.group]
+  }
+
+  function groupWinnerBetTitle(bet: Bet): string {
+    const picks = bet.legs.filter(isGroupPick)
+    if (picks.length === 0) return 'Favourites'
+    return picks.map((leg) => `${leg.group}: ${leg.team}`).join(', ')
+  }
+
+  function matchAccumulatorBetTitle(bet: MatchAccaBet): string {
+    return `Match accumulator (${bet.legs.length} legs)`
+  }
+
+  function matchResultBetTitle(bet: MatchResultBet): string {
+    return `${bet.team_a} ${bet.score_a}-${bet.score_b} ${bet.team_b}`
+  }
+
+  function finalistBetTitle(bet: FinalistBet): string {
+    return `${bet.team_a} and ${bet.team_b} to reach the final`
+  }
+
+  function tournamentWinnerBetTitle(bet: TournamentWinnerBet): string {
+    return `${bet.team} to win the tournament`
+  }
+
+  function topScorerBetTitle(bet: TopScorerBet): string {
+    return `${bet.player} top scorer`
   }
 </script>
 
@@ -269,7 +324,6 @@
                     <div class="selected-bet-head">
                       <div class="selected-bet-title-wrap">
                         <h4>{bet.title}</h4>
-                        <span>{bet.id}</span>
                       </div>
                       <strong>{money(bet.returnValue)}</strong>
                     </div>
@@ -308,7 +362,7 @@
       {/if}
     </section>
 
-    <MaxPayoutBreakdown maxPayout={maxPayout} />
+    <MaxPayoutBreakdown maxPayout={maxPayout} {labelByBetID} />
   {/if}
 </main>
 
@@ -493,14 +547,6 @@
     font-size: 0.92rem;
     font-weight: 800;
     line-height: 1.25;
-  }
-
-  .selected-bet-title-wrap span {
-    color: var(--wc-muted);
-    display: block;
-    font-size: 0.72rem;
-    margin-top: 0.15rem;
-    overflow-wrap: anywhere;
   }
 
   .selected-bet-meta {

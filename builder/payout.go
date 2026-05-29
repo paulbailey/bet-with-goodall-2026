@@ -92,7 +92,7 @@ func computeMaxPayout(s StateJSON) MaxPayoutJSON {
 		for _, leg := range b.Legs {
 			gw[leg.Group] = leg.Team
 		}
-		add(b.ID, fmt.Sprintf("Group-winner acca (%d legs)", len(b.Legs)), b.Stake, b.PotentialReturn, b.Status, claim{groupWinners: gw})
+		add(b.ID, fmt.Sprintf("Group-winner accumulator (%d legs)", len(b.Legs)), b.Stake, b.PotentialReturn, b.Status, claim{groupWinners: gw})
 	}
 
 	for _, b := range s.TopScorerBets {
@@ -113,7 +113,7 @@ func computeMaxPayout(s StateJSON) MaxPayoutJSON {
 		for i, leg := range b.Legs {
 			fx[i] = outcomeFixtureClaim(leg.Team, leg.Opponent, leg.Outcome)
 		}
-		add(b.ID, fmt.Sprintf("Match acca (%d legs)", len(b.Legs)), b.Stake, b.PotentialReturn, b.Status, claim{fixtures: fx})
+		add(b.ID, fmt.Sprintf("Match accumulator (%d legs)", len(b.Legs)), b.Stake, b.PotentialReturn, b.Status, claim{fixtures: fx})
 	}
 
 	for _, b := range s.FinalistBets {
