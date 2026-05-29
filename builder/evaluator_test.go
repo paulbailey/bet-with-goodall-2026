@@ -122,6 +122,25 @@ func TestEvaluateTournamentWinnerBet_CaseInsensitiveTeamMatch(t *testing.T) {
 	}
 }
 
+func TestTeamsMatch_CaseAndAccentInsensitive(t *testing.T) {
+	cases := []struct {
+		a, b string
+		want bool
+	}{
+		{"Ousmane Dembélé", "Ousmane Dembele", true},
+		{"Ousmane Dembélé", "OUSMANE DEMBÉLÉ", true},
+		{"Curaçao", "Curacao", true},
+		{" Curaçao ", "Curacao", true},
+		{"Müller", "Muller", true},
+		{"Dembélé", "Mbappé", false},
+	}
+	for _, c := range cases {
+		if got := teamsMatch(c.a, c.b); got != c.want {
+			t.Errorf("teamsMatch(%q, %q) = %v, want %v", c.a, c.b, got, c.want)
+		}
+	}
+}
+
 // ── Match-result (exact scoreline) bets ───────────────────────────────────────
 
 func TestEvaluateMatchResultBet_AliveWhenNoFixtureOrNotStarted(t *testing.T) {

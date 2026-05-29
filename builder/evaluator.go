@@ -3,6 +3,9 @@ package main
 import (
 	"strings"
 	"time"
+	"unicode"
+
+	"golang.org/x/text/unicode/norm"
 )
 
 const groupGames = 3 // each team plays 3 group-stage games
@@ -136,7 +139,7 @@ func isTeamEliminated(teamName string, groups []GroupStanding) bool {
 func evaluateTopScorerBet(playerName string, scorers []TopScorerEntry, groups []GroupStanding) string {
 	var predicted *TopScorerEntry
 	for i := range scorers {
-		if strings.EqualFold(scorers[i].Player, playerName) {
+		if teamsMatch(scorers[i].Player, playerName) {
 			predicted = &scorers[i]
 			break
 		}
@@ -152,7 +155,7 @@ func evaluateTopScorerBet(playerName string, scorers []TopScorerEntry, groups []
 	// Player's team is out — their tally is locked in.
 	// Lost if any still-active player already has more goals.
 	for _, s := range scorers {
-		if strings.EqualFold(s.Player, playerName) {
+		if teamsMatch(s.Player, playerName) {
 			continue
 		}
 		if !isTeamEliminated(s.Team, groups) && s.Goals > predicted.Goals {
@@ -208,10 +211,27 @@ func didTeamWinFinal(teamName string, matches []Match) bool {
 	return false
 }
 
-// teamsMatch does a case-insensitive comparison so team names in bets.yaml
-// don't need to exactly match the API's casing.
+// teamsMatch compares names case- and accent-insensitively so names in
+// bets.yaml don't need to match a feed's exact casing or diacritics — e.g.
+// "Ousmane Dembélé" matches a market runner spelled "Ousmane Dembele", and
+// "Curaçao" matches "Curacao".
 func teamsMatch(a, b string) bool {
-	return strings.EqualFold(a, b)
+	return foldName(a) == foldName(b)
+}
+
+// foldName normalises a name for comparison: trims surrounding space, strips
+// diacritics (NFD-decompose, then drop combining marks), and lowercases.
+func foldName(s string) string {
+	decomposed := norm.NFD.String(strings.TrimSpace(s))
+	var b strings.Builder
+	b.Grow(len(decomposed))
+	for _, r := range decomposed {
+		if unicode.Is(unicode.Mn, r) { // Mn: nonspacing combining marks (accents)
+			continue
+		}
+		b.WriteRune(unicode.ToLower(r))
+	}
+	return b.String()
 }
 
 // findMatch returns the fixture between two teams in either home/away
