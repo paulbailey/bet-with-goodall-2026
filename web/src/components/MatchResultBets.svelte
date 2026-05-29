@@ -23,15 +23,15 @@
   }
 </script>
 
-<section class="winner-bets-section">
+<section class="match-result-section">
   <h2 class="section-title">Match Result Bets</h2>
   <div class="bet-grid-scroll">
     <table class="bet-grid">
       <thead>
         <tr>
           <th class="col-ts-team">Match</th>
-          <th class="col-status">Predicted</th>
-          <th class="col-status">Actual</th>
+          <th class="col-score">Predicted</th>
+          <th class="col-score">Actual</th>
           <th class="col-stake">Stake</th>
           <th class="col-return">Return</th>
           <th class="col-chance">Chance</th>
@@ -49,8 +49,8 @@
               <span class="mr-vs">v</span>
               <Flag fi={b.fi} class="team-flag" />{b.code}
             </td>
-            <td class="col-status">{bet.score_a}–{bet.score_b}</td>
-            <td class="col-status">
+            <td class="col-score">{bet.score_a}–{bet.score_b}</td>
+            <td class="col-score">
               {hasActual ? `${bet.actual_a}–${bet.actual_b}` : '—'}
             </td>
             <td class="col-stake">
