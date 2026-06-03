@@ -55,9 +55,14 @@
     </span>
 
     <span class="bet-row-meta">
-      {#if bet.potential_return != null}
-        <span class="bet-row-return">{money(bet.potential_return)}</span>
-      {/if}
+      <span class="bet-row-money">
+        {#if bet.stake != null}
+          <span class="bet-row-stake">{money(bet.stake)}</span>
+        {/if}
+        {#if bet.potential_return != null}
+          <span class="bet-row-return">{bet.stake != null ? '→ ' : ''}{money(bet.potential_return)}</span>
+        {/if}
+      </span>
       {#if bet.probability != null}
         <span class="bet-row-chance">{pct(bet.probability)}</span>
       {/if}

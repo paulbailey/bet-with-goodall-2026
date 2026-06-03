@@ -352,6 +352,8 @@ body {
   flex-shrink: 0;
   font-size: 0.8rem;
 }
+.bet-row-money { display: inline-flex; align-items: baseline; gap: 0.3rem; white-space: nowrap; }
+.bet-row-stake { color: var(--wc-muted); font-size: 0.74rem; }
 .bet-row-return { font-weight: 700; }
 .bet-row-chance { font-weight: 600; color: #6d28d9; }
 .bet-row-status { font-weight: 700; font-size: 0.7rem; }
