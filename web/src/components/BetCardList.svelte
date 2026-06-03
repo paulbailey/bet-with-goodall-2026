@@ -11,11 +11,16 @@
   let { bets, favByGroup }: Props = $props()
 
   // Surface the bets that still matter: alive on top, won next, bust at the
-  // bottom (also dimmed). Sort is stable, so the original desktop order is kept
-  // within each status band.
+  // bottom (also dimmed). Within the alive band, order by descending chance so
+  // the most likely live bets lead; unpriced bets (no probability) sink last.
+  // Won/bust bands keep their original order (their chances are ~all 1 or 0).
   const RANK: Record<BetStatus, number> = { alive: 0, won: 1, lost: 2 }
   let sortedBets = $derived(
-    [...bets].sort((a, b) => RANK[a.status] - RANK[b.status])
+    [...bets].sort((a, b) => {
+      if (RANK[a.status] !== RANK[b.status]) return RANK[a.status] - RANK[b.status]
+      if (a.status === 'alive') return (b.probability ?? -1) - (a.probability ?? -1)
+      return 0
+    })
   )
 
   let counts = $derived.by(() => {

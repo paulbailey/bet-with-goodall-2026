@@ -204,3 +204,37 @@ func TestApplyLikelihoods_ExpectedPayoutAndProfit(t *testing.T) {
 		t.Errorf("expected profit: got %v want %v", s.Expected.ExpectedProfit, round2(wantPayout-10))
 	}
 }
+
+func TestRoundSig(t *testing.T) {
+	cases := []struct {
+		name string
+		in   float64
+		sig  int
+		want float64
+	}{
+		// A live 12-leg acca's joint probability is tiny but must not vanish to 0.
+		{"tiny acca survives", 1.73e-5, 4, 1.73e-5},
+		{"very tiny acca survives", 4.2e-9, 4, 4.2e-9},
+		{"ordinary probability", 0.1234567, 4, 0.1235},
+		{"near one", 0.98765, 4, 0.9877},
+		{"exact zero stays zero", 0, 4, 0},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got := roundSig(c.in, c.sig)
+			if c.want == 0 {
+				if got != 0 {
+					t.Fatalf("got %v want 0", got)
+				}
+				return
+			}
+			// Compare to 4 significant figures via relative tolerance.
+			if math.Abs(got-c.want)/c.want > 1e-3 {
+				t.Fatalf("got %v want %v", got, c.want)
+			}
+			if c.in > 0 && got == 0 {
+				t.Fatalf("positive input %v collapsed to 0", c.in)
+			}
+		})
+	}
+}

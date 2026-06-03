@@ -281,7 +281,7 @@ body {
   color: var(--leg-lost-fg);
 }
 
-.bet-row {
+.bet-list-row {
   background: var(--wc-white);
   border: 1px solid var(--wc-border);
   border-left: 4px solid var(--wc-border);
@@ -289,9 +289,9 @@ body {
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   overflow: hidden;
 }
-.bet-row.bet-alive { border-left-color: var(--leg-alive-fg); }
-.bet-row.bet-won   { border-left-color: #b45309; background: #fffbeb; }
-.bet-row.bet-lost  { border-left-color: var(--leg-lost-fg); opacity: 0.65; }
+.bet-list-row.bet-alive { border-left-color: var(--leg-alive-fg); }
+.bet-list-row.bet-won   { border-left-color: #b45309; background: #fffbeb; }
+.bet-list-row.bet-lost  { border-left-color: var(--leg-lost-fg); opacity: 0.65; }
 
 .bet-row-toggle {
   display: flex;

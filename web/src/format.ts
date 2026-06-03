@@ -27,8 +27,10 @@ export function pct(p: number | null | undefined): string {
   if (p == null) return '—'
   if (p <= 0) return '0%'
   if (p >= 1) return '100%'
-  if (p < 0.01) return '<1%'
-  if (p < 0.001) return '<0.1%'
   if (p > 0.99) return '>99%'
+  // Order the small-value tiers smallest-first: a 12-leg acca's chance is often
+  // well under 0.1%, and checking <1% first would mask every <0.1% longshot.
+  if (p < 0.001) return '<0.1%'
+  if (p < 0.01) return '<1%'
   return `${Math.round(p * 100)}%`
 }
