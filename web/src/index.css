@@ -247,32 +247,115 @@ body {
 /* The leg a bet swaps away from the favourite — its distinguishing pick. */
 .leg-pick  { box-shadow: inset 0 0 0 2px var(--wc-gold); font-weight: 700; }
 
-/* ── Mobile bet cards ── */
-.bet-cards { display: none; margin-top: 0.75rem; flex-direction: column; gap: 0.75rem; }
+/* ── Mobile collapsed bet list ──
+   Each accumulator is a variation on the same 12 favourites, so showing all 12
+   flags for ~40 bets is a wall of scrolling on a phone. Instead each bet is one
+   tappable row: its distinguishing picks (or, when bust, the leg that killed it)
+   as small chips, plus return/chance. Tap to expand the full 12-leg grid below
+   (which reuses .bet-card-legs / .bet-card-leg* untouched). Hidden by default;
+   the @media rule at the bottom swaps it in for the desktop table. */
+.bet-list { display: none; margin-top: 0.75rem; flex-direction: column; gap: 0.4rem; }
 
-.bet-card {
+.bet-list-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+  padding: 0.25rem 0.1rem 0.5rem;
+  font-size: 0.78rem;
+}
+.bet-list-counts { display: flex; flex-wrap: wrap; gap: 0.6rem; font-weight: 700; }
+.count-alive { color: var(--leg-alive-fg); }
+.count-won   { color: #b45309; }
+.count-lost  { color: var(--leg-lost-fg); }
+.count-total { color: var(--wc-muted); font-weight: 600; }
+.bet-list-totals { color: var(--wc-navy); font-weight: 700; }
+
+.bet-list-divider {
+  margin: 0.5rem 0 0.1rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--leg-lost-fg);
+}
+
+.bet-row {
   background: var(--wc-white);
-  border-radius: 0.75rem;
   border: 1px solid var(--wc-border);
-  box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+  border-left: 4px solid var(--wc-border);
+  border-radius: 0.6rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   overflow: hidden;
 }
+.bet-row.bet-alive { border-left-color: var(--leg-alive-fg); }
+.bet-row.bet-won   { border-left-color: #b45309; background: #fffbeb; }
+.bet-row.bet-lost  { border-left-color: var(--leg-lost-fg); opacity: 0.65; }
 
-.bet-card.bet-lost { opacity: 0.65; }
-.bet-card.bet-won  { background: #fffbeb; }
-
-.bet-card-title {
-  padding: 0.6rem 0.75rem 0;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--wc-navy);
+.bet-row-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.4rem 0.6rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
 }
+.bet-row-toggle:focus-visible { outline: 2px solid var(--wc-navy); outline-offset: -2px; }
 
+.bet-row-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  flex: 1;
+  min-width: 0;
+}
+.bet-chip-label { font-size: 0.82rem; font-weight: 700; color: var(--wc-navy); }
+
+.bet-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--wc-light);
+}
+.bet-chip-group { font-size: 0.62rem; opacity: 0.7; }
+.bet-chip-flag  { width: 1.3rem; height: 0.98rem; }
+.bet-chip-pick  { box-shadow: inset 0 0 0 2px var(--wc-gold); }
+.bet-chip-lost  { background: var(--leg-lost-bg); color: var(--leg-lost-fg); }
+.bet-chip-icon  { font-size: 0.7rem; }
+
+.bet-row-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+}
+.bet-row-return { font-weight: 700; }
+.bet-row-chance { font-weight: 600; color: #6d28d9; }
+.bet-row-status { font-weight: 700; font-size: 0.7rem; }
+.bet-alive .bet-row-status { color: var(--leg-alive-fg); }
+.bet-won   .bet-row-status { color: #b45309; }
+.bet-lost  .bet-row-status { color: var(--leg-lost-fg); }
+
+.bet-row-chevron { flex-shrink: 0; font-size: 0.7rem; color: var(--wc-muted); }
+
+/* Expanded full 12-leg grid (shared with the old card body). */
 .bet-card-legs {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  padding: 0.75rem;
+  padding: 0 0.75rem 0.75rem;
 }
 
 .bet-card-leg {
@@ -298,28 +381,9 @@ body {
 .bet-card-leg-code { font-size: 0.72rem; font-weight: 700; margin-top: 0.1rem; }
 .bet-card-leg-icon { font-size: 0.6rem; margin-top: 0.15rem; opacity: 0.75; }
 
-.bet-card-footer {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--wc-light);
-  border-top: 1px solid var(--wc-border);
-  font-size: 0.82rem;
-}
-
-.bet-card-stake  { color: var(--wc-muted); }
-.bet-card-return { font-weight: 700; flex: 1; }
-.bet-card-chance { font-weight: 600; color: #6d28d9; }
-
-.bet-card-status { font-weight: 700; }
-.bet-card-status.bet-alive   { color: var(--leg-alive-fg); }
-.bet-card-status.bet-lost    { color: var(--leg-lost-fg); }
-.bet-card-status.bet-won     { color: #b45309; }
-
 @media (max-width: 768px) {
   .bet-grid-section .bet-grid-scroll { display: none; }
-  .bet-cards                         { display: flex; }
+  .bet-list                          { display: flex; }
 }
 
 /* ── Bet sections: responsive flex tiling ──
