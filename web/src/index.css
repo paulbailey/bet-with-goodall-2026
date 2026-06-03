@@ -282,7 +282,6 @@ body {
 .count-won   { color: #b45309; }
 .count-lost  { color: var(--leg-lost-fg); }
 .count-total { color: var(--wc-muted); font-weight: 600; }
-.bet-list-totals { color: var(--wc-navy); font-weight: 700; }
 
 .bet-list-divider {
   margin: 0.5rem 0 0.1rem;
