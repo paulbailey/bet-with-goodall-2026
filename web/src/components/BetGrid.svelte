@@ -10,6 +10,7 @@
     computeFavByGroup,
     isPick,
     betLabel,
+    sortBetsForDisplay,
   } from '../bets'
   import Flag from './Flag.svelte'
   import BetCardList from './BetCardList.svelte'
@@ -25,6 +26,10 @@
   )
 
   let favByGroup = $derived(computeFavByGroup(bets))
+
+  // Live bets first (most likely leading), then won, then bust — same order as
+  // the mobile list (BetCardList sorts identically).
+  let sortedBets = $derived(sortBetsForDisplay(bets))
 </script>
 
 <section class="bet-grid-section">
@@ -46,7 +51,7 @@
         </tr>
       </thead>
       <tbody>
-        {#each bets as bet}
+        {#each sortedBets as bet}
           {@const legByGroup = Object.fromEntries(bet.legs.map((l) => [l.group, l]))}
           <tr class="bet-row {BET_STATUS_CLASS[bet.status]}">
             <td class="col-bet-name">{betLabel(bet, favByGroup)}</td>

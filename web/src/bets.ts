@@ -67,3 +67,20 @@ export function deviations(bet: Bet, favByGroup: Record<string, string>): BetLeg
 export function lostLegs(bet: Bet): BetLeg[] {
   return bet.legs.filter((l) => l.status === 'lost')
 }
+
+const STATUS_RANK: Record<BetStatus, number> = { alive: 0, won: 1, lost: 2 }
+
+// Display order shared by the desktop table and the mobile list: live bets
+// first (most likely leading), then won, then bust. Within the alive band we
+// sort by descending probability; an unpriced live bet (no probability) sinks
+// to the back of that band. Won/bust bands keep their original order — their
+// chances are all ~1 or 0. Returns a new array; the input is left untouched.
+export function sortBetsForDisplay(bets: Bet[]): Bet[] {
+  return [...bets].sort((a, b) => {
+    if (STATUS_RANK[a.status] !== STATUS_RANK[b.status]) {
+      return STATUS_RANK[a.status] - STATUS_RANK[b.status]
+    }
+    if (a.status === 'alive') return (b.probability ?? -1) - (a.probability ?? -1)
+    return 0
+  })
+}

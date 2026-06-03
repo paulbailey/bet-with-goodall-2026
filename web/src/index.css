@@ -89,6 +89,18 @@ body {
   border-radius: 999px;
 }
 
+.countdown-badge {
+  background: var(--wc-gold);
+  color: var(--wc-navy);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
 .updated-at {
   color: rgba(255,255,255,0.55);
   font-size: 0.78rem;
