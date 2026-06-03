@@ -1,6 +1,7 @@
 <script lang="ts">
-  import type { Bet, BetStatus } from '../types'
+  import type { Bet } from '../types'
   import { money } from '../format'
+  import { sortBetsForDisplay } from '../bets'
   import BetCardRow from './BetCardRow.svelte'
 
   interface Props {
@@ -10,13 +11,9 @@
 
   let { bets, favByGroup }: Props = $props()
 
-  // Surface the bets that still matter: alive on top, won next, bust at the
-  // bottom (also dimmed). Sort is stable, so the original desktop order is kept
-  // within each status band.
-  const RANK: Record<BetStatus, number> = { alive: 0, won: 1, lost: 2 }
-  let sortedBets = $derived(
-    [...bets].sort((a, b) => RANK[a.status] - RANK[b.status])
-  )
+  // Live bets first (most likely leading), then won, then bust — shared with the
+  // desktop table so both views agree.
+  let sortedBets = $derived(sortBetsForDisplay(bets))
 
   let counts = $derived.by(() => {
     let alive = 0, won = 0, lost = 0

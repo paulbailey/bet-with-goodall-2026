@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log/slog"
+	"math"
 	"strings"
 )
 
@@ -193,7 +194,7 @@ func price(prob float64, ok bool, ret *float64, probPtr, expPtr **float64) float
 	if !ok {
 		return 0
 	}
-	p := round4(prob)
+	p := roundSig(prob, 4)
 	*probPtr = &p
 	if ret == nil {
 		return 0
@@ -320,9 +321,25 @@ func lowerSim(sim map[string]TournamentSimResult) map[string]TournamentSimResult
 	return out
 }
 
-func round4(f float64) float64 {
-	if f < 0 {
-		return -float64(int64(-f*1e4+0.5)) / 1e4
+// roundSig rounds f to sig significant figures. A 12-leg group-winner acca is
+// the product of twelve win-the-group chances, so its joint probability is
+// routinely far below 0.0001 — rounding to a fixed number of decimal places
+// would collapse every live longshot to exactly 0 (displaying as "0%" and
+// making the bets impossible to rank by chance). Significant-figure rounding
+// keeps the magnitude, and the relative ordering between bets, intact.
+func roundSig(f float64, sig int) float64 {
+	if f == 0 {
+		return 0
 	}
-	return float64(int64(f*1e4+0.5)) / 1e4
+	neg := f < 0
+	if neg {
+		f = -f
+	}
+	power := float64(sig) - math.Ceil(math.Log10(f))
+	mag := math.Pow(10, power)
+	rounded := math.Round(f*mag) / mag
+	if neg {
+		return -rounded
+	}
+	return rounded
 }

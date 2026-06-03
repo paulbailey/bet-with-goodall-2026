@@ -27,7 +27,7 @@
   let picks = $derived(deviations(bet, favByGroup))
 </script>
 
-<div class="bet-row {BET_STATUS_CLASS[bet.status]}">
+<div class="bet-list-row {BET_STATUS_CLASS[bet.status]}">
   <button class="bet-row-toggle" aria-expanded={open} onclick={() => (open = !open)}>
     <span class="bet-row-chips">
       {#if bet.status === 'lost'}
