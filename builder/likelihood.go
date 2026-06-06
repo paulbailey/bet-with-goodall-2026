@@ -33,6 +33,25 @@ const (
 	simSeed = 20260611
 )
 
+// unsampledProb stands in for a simulator probability of exactly 0. A team that
+// wins its group 0 times across simIterations draws is "too rare to measure",
+// not "impossible" — a leg only becomes impossible when the evaluator marks it
+// lost, which is handled separately. Folding a hard 0 into a group acca zeroes
+// the whole product, so an alive longshot would show "0%" and lose its place in
+// the chance ordering. Half a sample is the midpoint of the (0, 1/N) bucket a
+// zero-count event falls in: small enough not to overstate a chance the sim
+// couldn't see, large enough to keep the joint probability positive.
+const unsampledProb = 0.5 / simIterations
+
+// simFloor lifts a zero simulator probability to unsampledProb, leaving any
+// measured (positive) probability untouched.
+func simFloor(p float64) float64 {
+	if p <= 0 {
+		return unsampledProb
+	}
+	return p
+}
+
 // ExpectedJSON is the probability-weighted counterpart to MaxPayoutJSON: what we
 // expect to win on average given current market/simulator probabilities.
 type ExpectedJSON struct {
@@ -145,7 +164,7 @@ func applyLikelihoods(s *StateJSON, snap OddsSnapshot, sim map[string]Tournament
 				return mp, true
 			}
 			if r, ok := simByName[lowerName(b.Team)]; ok {
-				return r.PWinTournament, true
+				return simFloor(r.PWinTournament), true
 			}
 			return 0, false
 		})
@@ -220,7 +239,7 @@ func groupAccaProb(legs []LegJSON, snap OddsSnapshot, simByName map[string]Tourn
 		if mp, ok := snap.groupWinnerProb(leg.Group, leg.Team); ok {
 			p *= mp
 		} else if r, ok := simByName[lowerName(leg.Team)]; ok {
-			p *= r.PWinGroup
+			p *= simFloor(r.PWinGroup)
 		} else {
 			return 0, false
 		}
