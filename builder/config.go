@@ -25,6 +25,15 @@ type Env struct {
 	BetfairPassword string
 	BetfairCertFile string // PEM client certificate for cert login
 	BetfairKeyFile  string // PEM private key for cert login
+
+	// Daily summary. AnthropicKey is optional — without it the recap paragraph
+	// falls back to a templated sentence. The keys default to siblings of the
+	// state file; SummaryTZ groups fixtures into tournament days.
+	AnthropicKey    string
+	AnthropicModel  string
+	SummaryTZ       string
+	SummaryKey      string // public file the frontend reads
+	SummaryStateKey string // builder-private snapshot state
 }
 
 func loadEnv() Env {
@@ -39,6 +48,12 @@ func loadEnv() Env {
 		BetfairPassword: os.Getenv("BETFAIR_PASSWORD"),
 		BetfairCertFile: os.Getenv("BETFAIR_CERT_FILE"),
 		BetfairKeyFile:  os.Getenv("BETFAIR_KEY_FILE"),
+
+		AnthropicKey:    os.Getenv("ANTHROPIC_API_KEY"),
+		AnthropicModel:  getEnv("ANTHROPIC_MODEL", "claude-opus-4-8"),
+		SummaryTZ:       getEnv("SUMMARY_TZ", "America/New_York"),
+		SummaryKey:      getEnv("SUMMARY_KEY", "data/daily-summary.json"),
+		SummaryStateKey: getEnv("SUMMARY_STATE_KEY", "data/summary-state.json"),
 	}
 	if env.LocalOutput == "" {
 		env.Bucket = mustEnv("S3_BUCKET")

@@ -20,6 +20,7 @@ config/     bets.yaml — the bet definitions, edited once before the tournament
 1. `config/bets.yaml` defines every accumulator and its legs (which team wins which group).
 2. The Go builder runs as a k8s Deployment on a homelab cluster. It polls a football results API, calculates which legs are still alive, and writes `data/state.json` to the S3 bucket.
 3. CloudFront serves the static site. The Svelte app fetches `data/state.json` and renders the bet grid.
+4. After each day's matches finish, the builder also writes `data/daily-summary.json` — a natural-language recap (Claude API, with a templated fallback) plus the day's biggest risers/fallers in bet likelihood and any bets that landed or went bust. The site shows the latest on the dashboard and keeps a browsable archive at `/daily-summary`. See `builder/README.md` → Daily summary.
 
 ## Key decisions
 

@@ -5,6 +5,10 @@ computes a maximum possible payout, and — when a Betfair odds source is
 configured — a win probability and expected payout for every bet. It writes
 `state.json` (to a local file or S3) for the Svelte frontend to render.
 
+It also produces a **daily summary** after each day's matches finish: a short
+natural-language recap plus the biggest risers/fallers in bet likelihood and any
+bets that landed or went bust. See [Daily summary](#daily-summary).
+
 ## Running locally
 
 From this directory:
@@ -39,6 +43,11 @@ jq '.expected, (.bets[]|{id,status,probability,expected_return})' state.json
 | `BETFAIR_SESSION_TOKEN` | — | — | pre-minted session token |
 | `BETFAIR_USERNAME` / `BETFAIR_PASSWORD` | — | — | login credentials |
 | `BETFAIR_CERT_FILE` / `BETFAIR_KEY_FILE` | — | — | PEM client cert + key for cert login |
+| `ANTHROPIC_API_KEY` | no | — | enables Claude-written daily-summary recap; absent ⇒ templated sentence |
+| `ANTHROPIC_MODEL` | no | `claude-opus-4-8` | model for the recap paragraph |
+| `SUMMARY_TZ` | no | `America/New_York` | timezone used to group fixtures into a "tournament day" |
+| `SUMMARY_KEY` | no | `data/daily-summary.json` | public summary object the frontend reads |
+| `SUMMARY_STATE_KEY` | no | `data/summary-state.json` | builder-private probability snapshot store |
 
 Without `BETFAIR_APP_KEY` the builder degrades gracefully: it still tracks bet
 status and max payout, just without probabilities or expected payout.
@@ -97,6 +106,35 @@ On success you'll see `betfair auth: certificate login` → `betfair odds enable
 - Keep the `.key` private (`chmod 600`) and out of the repo. `*.key`/`*.crt`/
   `*.pem` are gitignored as a safeguard.
 - The `CN` value is an arbitrary label for a self-signed cert.
+
+## Daily summary
+
+After every poll the builder checks whether a tournament day's fixtures have all
+finished (fixtures are grouped by local date in `SUMMARY_TZ`, so a late-evening
+North-American card stays on one day rather than splitting across UTC midnight).
+The first time it sees a newly-completed day it:
+
+1. snapshots every priced bet's current win probability,
+2. diffs it against the previous day's close (or a pre-tournament baseline on
+   day one), kept in `summary-state.json`,
+3. ranks the biggest movers by **relative** change — so long-shot accumulators
+   that swing in relative terms aren't buried under shorter-priced bets — while
+   carrying the absolute percentage-point move too,
+4. notes any bets that were alive at the previous close and are now won/bust,
+5. renders a recap paragraph (Claude when `ANTHROPIC_API_KEY` is set, otherwise a
+   templated sentence), and
+6. prepends the result to a rolling archive in `daily-summary.json`.
+
+The public `daily-summary.json` is what the frontend's Daily Summary card and
+`/daily-summary` archive page read; it's a separate object from `state.json`
+because it changes about once a day rather than every poll. A notification
+channel (email/Slack/push) can hang off the same file or off the
+`daily summary generated` log line later — none is wired up yet.
+
+Run locally with a baseline that already has completed days by pointing
+`FDB_API_KEY` at the live feed once the group stage is under way; with no
+completed day yet it just records the pre-tournament baseline and writes nothing
+to `daily-summary.json`.
 
 ## Tests
 

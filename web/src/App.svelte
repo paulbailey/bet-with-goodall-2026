@@ -1,8 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { TournamentState } from "./types";
+  import type { TournamentState, DailySummaryFile } from "./types";
   import Header from "./components/Header.svelte";
   import SummaryBar from "./components/SummaryBar.svelte";
+  import DailySummary from "./components/DailySummary.svelte";
+  import DailySummaryPage from "./components/DailySummaryPage.svelte";
   import MaxPayoutPage from "./components/MaxPayoutPage.svelte";
   import BetGrid from "./components/BetGrid.svelte";
   import MatchAccaBets from "./components/MatchAccaBets.svelte";
@@ -14,16 +16,22 @@
   import GroupStandings from "./components/GroupStandings.svelte";
 
   const POLL_INTERVAL_MS = 60_000;
-  type AppRoute = "/" | "/max-payout";
+  type AppRoute = "/" | "/max-payout" | "/daily-summary";
 
   let data = $state<TournamentState | null>(null);
+  let summary = $state<DailySummaryFile | null>(null);
   let error = $state<string | null>(null);
   let route = $state<AppRoute>("/");
   let lastUpdatedAt: string | null = null;
+  let lastSummaryAt: string | null = null;
+
+  const latestSummary = $derived(summary?.summaries?.[0] ?? null);
 
   function routeFromPath(pathname: string): AppRoute {
     const cleanPath = pathname.replace(/\/+$/, "") || "/";
-    return cleanPath === "/max-payout" ? "/max-payout" : "/";
+    if (cleanPath === "/max-payout") return "/max-payout";
+    if (cleanPath === "/daily-summary") return "/daily-summary";
+    return "/";
   }
 
   function syncRoute() {
@@ -75,11 +83,32 @@
     }
   }
 
+  // The daily summary lives in its own file because it changes about once a day,
+  // not every poll. A 404 (no summary generated yet) is fine — we just hide the
+  // section. Only swap in new data when the file actually changed.
+  async function fetchSummary() {
+    try {
+      const res = await fetch(`/data/daily-summary.json?_=${Date.now()}`);
+      if (!res.ok) return;
+      const json: DailySummaryFile = await res.json();
+      if (json.updated_at !== lastSummaryAt) {
+        lastSummaryAt = json.updated_at;
+        summary = json;
+      }
+    } catch {
+      // Network blip or missing file — keep whatever we last had.
+    }
+  }
+
   onMount(() => {
     syncRoute();
     window.addEventListener("popstate", syncRoute);
     fetchState();
-    const id = setInterval(fetchState, POLL_INTERVAL_MS);
+    fetchSummary();
+    const id = setInterval(() => {
+      fetchState();
+      fetchSummary();
+    }, POLL_INTERVAL_MS);
     return () => {
       clearInterval(id);
       window.removeEventListener("popstate", syncRoute);
@@ -99,9 +128,14 @@
 {:else}
   {#if route === "/max-payout"}
     <MaxPayoutPage {data} onNavigate={navigate} />
+  {:else if route === "/daily-summary"}
+    <DailySummaryPage file={summary} onNavigate={navigate} />
   {:else}
     <main class="app-content">
       <SummaryBar {data} onNavigate={navigate} />
+      {#if latestSummary}
+        <DailySummary summary={latestSummary} onNavigate={navigate} />
+      {/if}
       <BetGrid bets={data.bets} />
       <!-- The narrower bet types tile side-by-side to fill the width on desktop
            and wrap to a single column on small screens. -->

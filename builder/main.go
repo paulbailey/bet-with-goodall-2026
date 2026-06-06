@@ -60,6 +60,8 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
+	summaryGen := setupSummary(env, logger)
+
 	betfair := setupBetfair(ctx, env, logger)
 	pairs := finalistPairs(cfg)
 	var bundle *oddsBundle
@@ -105,6 +107,10 @@ func main() {
 
 			if err := writer.Write(ctx, state); err != nil {
 				logger.Error("write failed", "err", err)
+			}
+
+			if summaryGen != nil {
+				summaryGen.maybeGenerate(ctx, state, matches)
 			}
 		}
 
@@ -191,6 +197,41 @@ func refreshOdds(ctx context.Context, bf *betfairClient, groups []GroupStanding,
 		"rated_teams", len(strength),
 	)
 	return &oddsBundle{snap: snap, strength: strength, fetched: time.Now()}
+}
+
+// setupSummary builds the daily-summary generator: a blob store matching the
+// state writer (local dir or S3 bucket), the tournament-day timezone, and an
+// Anthropic client when an API key is set (otherwise narration is templated).
+// Returns nil to disable the feature when the store can't be created.
+func setupSummary(env Env, logger *slog.Logger) *summaryGenerator {
+	store, err := newBlobStore(env, logger)
+	if err != nil {
+		logger.Warn("daily summary disabled (blob store unavailable)", "err", err)
+		return nil
+	}
+
+	loc, err := time.LoadLocation(env.SummaryTZ)
+	if err != nil {
+		logger.Warn("daily summary: unknown timezone, falling back to UTC", "tz", env.SummaryTZ, "err", err)
+		loc = time.UTC
+	}
+
+	var anth *anthropicClient
+	if env.AnthropicKey != "" {
+		anth = newAnthropicClient(env.AnthropicKey, env.AnthropicModel, logger)
+		logger.Info("daily summary enabled (Claude narration)", "model", env.AnthropicModel, "tz", loc.String())
+	} else {
+		logger.Info("daily summary enabled (templated narration — no ANTHROPIC_API_KEY)", "tz", loc.String())
+	}
+
+	return &summaryGenerator{
+		store:     store,
+		anth:      anth,
+		loc:       loc,
+		publicKey: env.SummaryKey,
+		stateKey:  env.SummaryStateKey,
+		logger:    logger,
+	}
 }
 
 // fileExists reports whether path exists and is readable as a regular file.
