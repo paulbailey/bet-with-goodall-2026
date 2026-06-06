@@ -81,6 +81,28 @@ func TestApplyLikelihoods_GroupAccaFallsBackToSim(t *testing.T) {
 	approxPtr(t, "sim fallback", s.Bets[0].Probability, 0.7)
 }
 
+// A leg the simulator never saw win its group (PWinGroup == 0) is alive but too
+// rare to measure, not impossible. It must contribute the unsampled floor rather
+// than zeroing the whole acca, so the bet keeps a positive, rankable chance
+// instead of collapsing to "0%".
+func TestApplyLikelihoods_GroupAccaUnsampledSimLegIsFloored(t *testing.T) {
+	snap := testSnapshot()
+	sim := map[string]TournamentSimResult{
+		"Switzerland": {PWinGroup: 0.0}, // never won its group across the sim draws
+	}
+	s := StateJSON{
+		Bets: []BetJSON{{
+			ID: "ga-unsampled", Status: "alive", PotentialReturn: f(10),
+			Legs: []LegJSON{
+				{Group: "A", Team: "Mexico", Status: "alive"},      // market: 0.40
+				{Group: "D", Team: "Switzerland", Status: "alive"}, // no market → sim 0 → floored
+			},
+		}},
+	}
+	applyLikelihoods(&s, snap, sim, nil)
+	approxPtr(t, "unsampled sim leg floored", s.Bets[0].Probability, 0.40*unsampledProb)
+}
+
 func TestApplyLikelihoods_MatchAcca(t *testing.T) {
 	snap := testSnapshot()
 	s := StateJSON{
