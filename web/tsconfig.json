@@ -9,7 +9,10 @@
     "resolveJsonModule": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
-    "types": ["vite/client"]
+    "types": ["vite/client", "vite-plugin-pwa/client"]
   },
-  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.svelte"]
+  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.svelte"],
+  // The service worker is type-checked separately (tsconfig.worker.json): it
+  // needs the WebWorker lib, which conflicts with the DOM lib the app uses.
+  "exclude": ["src/sw.ts"]
 }

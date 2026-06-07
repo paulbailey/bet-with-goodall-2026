@@ -21,6 +21,20 @@ resource "aws_cloudfront_distribution" "site" {
     origin_access_control_id = aws_cloudfront_origin_access_control.site.id
   }
 
+  # Push-subscription API (API Gateway HTTP API) served same-origin under /api/*
+  # so the static site can POST subscriptions without CORS.
+  origin {
+    domain_name = replace(aws_apigatewayv2_api.push.api_endpoint, "https://", "")
+    origin_id   = "apigw-push"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "https-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
   # Default: no caching — keeps index.html and data/state.json always fresh
   default_cache_behavior {
     target_origin_id       = "s3-betwithgoodall"
@@ -44,6 +58,21 @@ resource "aws_cloudfront_distribution" "site" {
 
     # AWS managed: CachingOptimized (default TTL 86400s, max 31536000s)
     cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+  }
+
+  # /api/*: forward to the push-subscription API Gateway. No caching, and pass
+  # everything through except the Host header (API Gateway rejects a mismatched
+  # Host) via the managed AllViewerExceptHostHeader origin-request policy.
+  ordered_cache_behavior {
+    path_pattern           = "/api/*"
+    target_origin_id       = "apigw-push"
+    viewer_protocol_policy = "redirect-to-https"
+    compress               = true
+    allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+    cached_methods         = ["GET", "HEAD"]
+
+    cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # CachingDisabled
+    origin_request_policy_id = "b689b0a8-53d0-40ab-baf2-68738e2966ac" # AllViewerExceptHostHeader
   }
 
   # SPA fallback: S3 returns 403 for unknown paths → serve index.html

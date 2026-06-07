@@ -1,73 +1,57 @@
-# React + TypeScript + Vite
+# web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Svelte 5 + Vite frontend for the World Cup 2026 bet tracker. No SSR — the app
+fetches `data/state.json` (and `data/daily-summary.json`) at runtime from the
+same CloudFront origin and renders the bet grid.
 
-Currently, two official plugins are available:
+## Develop
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev      # vite dev server
+npm run build    # production build → dist/
+npm run check    # svelte-check (app) + tsc (service worker)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+During development the live data files aren't served by Vite; the dashboard
+shows a loading state until `data/state.json` exists. Point the builder at this
+directory's `public/` (via `LOCAL_OUTPUT`) to populate them, or run against the
+deployed JSON.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## PWA
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+The app is an installable PWA built with
+[`vite-plugin-pwa`](https://vite-pwa-org.netlify.app/) using the
+`injectManifest` strategy. The custom service worker lives in `src/sw.ts`:
+
+- Precaches the app shell (Workbox) for offline use.
+- Runtime-caches `data/*.json` network-first, so an offline launch shows the
+  last grid we saw.
+- Handles `push` / `notificationclick` for match-result notifications.
+
+The service worker uses the `WebWorker` lib, which conflicts with the app's
+`DOM` lib, so it's type-checked via its own `tsconfig.worker.json` and excluded
+from the app `tsconfig.json`.
+
+### App icons
+
+`public/*.png` are rasterised from `icons/trophy.svg`. To regenerate after
+editing the source:
+
+```bash
+npm i -D sharp && node scripts/gen-icons.mjs && npm uninstall sharp
 ```
+
+### Push notifications
+
+The "Match alerts" toggle (`PushOptIn.svelte`) subscribes the browser with the
+VAPID public key and POSTs the subscription to `/api/subscribe`. The public key
+comes from `VITE_VAPID_PUBLIC_KEY` at build time; when it's unset the toggle
+hides itself and everything else works unchanged.
+
+When a match finishes, the push shows the score and deep-links to
+`/match/<id>` (`MatchResultPage.svelte`), which renders how the result moved the
+bets from `data/match-results.json`. That route is self-contained — it fetches
+its own data — so the deep link works even if the dashboard's `state.json` is
+slow. See `builder/README.md` → Push notifications for the end-to-end flow and
+key generation.

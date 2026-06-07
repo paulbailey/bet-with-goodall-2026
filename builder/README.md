@@ -48,6 +48,11 @@ jq '.expected, (.bets[]|{id,status,probability,expected_return})' state.json
 | `SUMMARY_TZ` | no | `America/New_York` | timezone used to group fixtures into a "tournament day" |
 | `SUMMARY_KEY` | no | `data/daily-summary.json` | public summary object the frontend reads |
 | `SUMMARY_STATE_KEY` | no | `data/summary-state.json` | builder-private probability snapshot store |
+| `MATCH_RESULTS_KEY` | no | `data/match-results.json` | public per-match bet-changes file the `/match` page reads |
+| `VAPID_PRIVATE_KEY` | for push | — | VAPID private key; enables match-result push notifications |
+| `VAPID_PUBLIC_KEY` | for push | — | VAPID public key (must match the one baked into the frontend) |
+| `VAPID_SUBJECT` | no | `https://betwithgoodall.com` | VAPID `sub` claim (a `mailto:` or `https:` URL) |
+| `PUSH_TABLE` | for push | — | DynamoDB table of Web Push subscriptions |
 
 Without `BETFAIR_APP_KEY` the builder degrades gracefully: it still tracks bet
 status and max payout, just without probabilities or expected payout.
@@ -135,6 +140,59 @@ Run locally with a baseline that already has completed days by pointing
 `FDB_API_KEY` at the live feed once the group stage is under way; with no
 completed day yet it just records the pre-tournament baseline and writes nothing
 to `daily-summary.json`.
+
+## Push notifications
+
+The site is an installable PWA. Each time a match finishes the builder records
+how the result moved the group's bets and sends a Web Push. The push itself
+carries only the **score** and a call to action; tapping it deep-links to
+`/match/<id>`, a PWA page that renders the **detail** — the recap, the bets that
+landed or went bust, and the biggest likelihood swings — from
+`data/match-results.json`. Keeping the detail on the page (rather than in the
+notification body) means the push stays short and the page can show the full
+picture.
+
+**How it fits together:**
+
+1. The frontend asks the browser to subscribe (with the VAPID *public* key) and
+   POSTs the subscription to `/api/subscribe`, a CloudFront → API Gateway →
+   Lambda → DynamoDB path provisioned in `infra/push.tf`.
+2. Each poll cycle the builder diffs fixture statuses against the previous
+   cycle. For any match that just turned `FINISHED` it:
+   - records a `MatchResult` (score, recap, risers/fallers/settled) into the
+     rolling archive `data/match-results.json` (`MATCH_RESULTS_KEY`). The recap
+     is Claude-written when `ANTHROPIC_API_KEY` is set, otherwise templated from
+     the same movers data the daily summary uses. This happens whether or not
+     push is configured, so the `/match` page is always populated.
+   - if push is enabled, signs a notification (score + CTA, deep-linking to
+     `/match/<id>`) with the VAPID *private* key and sends it to every
+     subscription in `PUSH_TABLE`. Subscriptions the push service reports as gone
+     (HTTP 404/410) are pruned.
+3. The service worker (`web/src/sw.ts`) shows the notification and opens the
+   deep link when it's tapped.
+
+On a fresh start the builder seeds its fixture-status baseline without sending
+anything, so a restart never replays already-finished matches.
+
+**Generating the VAPID keypair** (once):
+
+```bash
+# With the web-push CLI (npx, no install):
+npx web-push generate-vapid-keys
+# → Public Key:  B....   Private Key:  ....
+```
+
+Then:
+
+- Put the **private** key in SSM at `/homelab/bet-with-goodall/builder/vapid_private`
+  and the **public** key at `/homelab/bet-with-goodall/builder/vapid_public`
+  (both parameters are created by `infra/push.tf`). The ExternalSecret syncs
+  them into the `bet-builder` Secret.
+- Set the **public** key as the `VITE_VAPID_PUBLIC_KEY` GitHub Actions variable
+  so it's baked into the frontend build. The public key on both sides must match.
+
+Without `VAPID_PRIVATE_KEY` / `PUSH_TABLE` the builder skips pushes entirely and
+everything else runs unchanged. Push is also disabled in `LOCAL_OUTPUT` mode.
 
 ## Tests
 

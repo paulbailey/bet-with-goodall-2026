@@ -92,11 +92,54 @@ Built with **Vite + React + TypeScript**.
 
 Manages:
 - S3 bucket (private, versioning on, no public access).
-- CloudFront distribution (OAC → S3, HTTPS only, default TTL 60 s so data refreshes are visible promptly).
-- IAM role for the builder (trust policy: `sts:AssumeRoleWithWebIdentity` from the homelab cluster's OIDC provider, limited to `s3:PutObject` and `s3:GetObject` on the bucket).
+- CloudFront distribution (OAC → S3, HTTPS only, default TTL 60 s so data refreshes are visible promptly). Also fronts the push-subscription API at `/api/*` (see Push notifications).
+- IAM role for the builder (trust policy: `sts:AssumeRoleWithWebIdentity` from the homelab cluster's OIDC provider, limited to `s3:PutObject`/`s3:GetObject` on the bucket and `dynamodb:Scan`/`DeleteItem` on the subscription table).
+- Push subscription store: DynamoDB table + API Gateway HTTP API + Lambda (`infra/push.tf`).
 - Optional: Route 53 record + ACM certificate for a custom domain.
 
 State backend: Terraform Cloud.
+
+### 6. PWA + push notifications
+
+The frontend is an installable PWA via `vite-plugin-pwa` (`injectManifest`
+strategy). The custom service worker (`web/src/sw.ts`) precaches the app shell
+for offline use, runtime-caches the live `data/*.json` network-first, and
+handles `push`/`notificationclick` events.
+
+Because the site is otherwise fully static, push needs a small write path that
+doesn't break the "no server-side logic at request time" rule for the site
+itself:
+
+```
+ browser ──POST /api/subscribe──▶ CloudFront ──▶ API Gateway ──▶ Lambda ──▶ DynamoDB
+                                  (/api/* behaviour)                          │
+ builder ──Scan / DeleteItem (IRSA) ─────────────────────────────────────────┘
+        └─ signs Web Push (VAPID private key) ──▶ push services ──▶ browsers
+```
+
+- **Opt-in:** the dashboard shows a "Match alerts" toggle (`PushOptIn.svelte`).
+  Enabling it requests notification permission, subscribes with the VAPID
+  *public* key (baked in at build time via `VITE_VAPID_PUBLIC_KEY`), and POSTs
+  the subscription to `/api/subscribe`. The endpoint is same-origin (a
+  CloudFront `/api/*` behaviour pointing at the API Gateway origin), so there's
+  no CORS to manage.
+- **Storage:** a Lambda writes/deletes rows in a DynamoDB table keyed by a hash
+  of the subscription endpoint. No auth — a subscription is origin-bound and
+  only the holder of the VAPID private key can deliver to it.
+- **Sending:** each poll cycle the builder diffs fixture statuses against the
+  previous cycle. For any match that just finished it records a `MatchResult`
+  (score, recap, risers/fallers/settled, reusing the daily-summary movers) into
+  the rolling `data/match-results.json` archive, then — if push is enabled —
+  sends a notification carrying just the **score and a CTA** to every
+  subscription, pruning any the push service reports as gone.
+- **Detail page:** the notification deep-links to `/match/<id>`, a client-routed
+  PWA page that renders the bet changes for that match from
+  `data/match-results.json`. Keeping the detail on the page (not in the push
+  body) keeps the notification short and lets the page show the full breakdown.
+  The match-results file is generated whether or not push is configured.
+
+VAPID keys are generated once and stored in SSM (private) / a GitHub Actions
+variable (public). See `builder/README.md` → Push notifications.
 
 ### 5. Kubernetes manifests (`builder/k8s/` + root `kustomization.yaml`)
 

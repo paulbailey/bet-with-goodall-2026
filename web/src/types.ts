@@ -175,6 +175,28 @@ export interface DailySummaryFile {
   summaries: DailySummary[] // newest first
 }
 
+// Match results: written by the builder when a fixture finishes, one entry per
+// match describing the result and how it moved the group's bets. The /match/<id>
+// page (the push-notification deep-link target) reads this file.
+export interface MatchResult {
+  id: string
+  finished_at: string
+  group: string
+  home: string
+  away: string
+  home_score: number
+  away_score: number
+  paragraph: string
+  risers: SummaryMover[]
+  fallers: SummaryMover[]
+  settled: SummarySettled[]
+}
+
+export interface MatchResultsFile {
+  updated_at: string
+  results: MatchResult[] // newest first
+}
+
 export interface TournamentState {
   updated_at: string
   tournament_phase: TournamentPhase
