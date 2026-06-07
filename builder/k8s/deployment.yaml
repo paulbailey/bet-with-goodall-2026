@@ -78,6 +78,15 @@ spec:
               value: /betfair/tls.crt
             - name: BETFAIR_KEY_FILE
               value: /betfair/tls.key
+            # Daily summary narration (optional). Without it the recap paragraph
+            # falls back to a templated sentence; the rest of the summary (movers,
+            # settled bets) is unaffected.
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: bet-builder
+                  key: ANTHROPIC_API_KEY
+                  optional: true
           volumeMounts:
             - name: aws-token
               mountPath: /var/run/secrets/eks.amazonaws.com/serviceaccount

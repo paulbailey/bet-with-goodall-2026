@@ -139,6 +139,42 @@ export interface Expected {
   expected_profit: number
 }
 
+// Daily summary: written once per day by the builder after a tournament day's
+// matches have all finished, fetched separately from state.json (it changes
+// roughly once a day, not every poll).
+export interface SummaryMover {
+  id: string
+  label: string
+  category: string
+  status: BetStatus
+  prev_prob: number
+  new_prob: number
+  delta_pp: number // new - prev, as a 0–1 fraction
+  ratio: number // new / prev
+}
+
+export interface SummarySettled {
+  id: string
+  label: string
+  category: string
+  status: 'won' | 'lost'
+}
+
+export interface DailySummary {
+  date: string // YYYY-MM-DD tournament day that finished
+  generated_at: string
+  paragraph: string
+  risers: SummaryMover[]
+  fallers: SummaryMover[]
+  settled: SummarySettled[]
+  bets_tracked: number
+}
+
+export interface DailySummaryFile {
+  updated_at: string
+  summaries: DailySummary[] // newest first
+}
+
 export interface TournamentState {
   updated_at: string
   tournament_phase: TournamentPhase
