@@ -1,10 +1,13 @@
 // Web Push subscription registry for bet-with-goodall.
 //
-// A tiny HTTP API (API Gateway v2 → this Lambda → DynamoDB) that the static
-// site calls to opt in/out of match-result push notifications. The builder
-// reads the same table to send pushes. No auth: a push subscription is
-// origin-bound and only our VAPID private key can deliver to it, so the worst a
-// stranger can do is register their own browser to receive our notifications.
+// A tiny endpoint (CloudFront → Lambda function URL → this Lambda → DynamoDB)
+// that the static site calls to opt in/out of match-result push notifications.
+// The builder reads the same table to send pushes. No auth: a push subscription
+// is origin-bound and only our VAPID private key can deliver to it, so the worst
+// a stranger can do is register their own browser to receive our notifications.
+//
+// Function URLs use the API Gateway v2 (payload format 2.0) event shape, so
+// requestContext.http.{method,path} and event.body are read the same way.
 //
 // Routes (same-origin via CloudFront under /api/*):
 //   POST /api/subscribe    body: a PushSubscription JSON ({ endpoint, keys })

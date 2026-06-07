@@ -1,8 +1,8 @@
 # Web Push notifications: a subscription registry the static site writes to and
 # the builder reads from to send match-result pushes.
 #
-#   browser ──POST /api/subscribe──▶ CloudFront ──▶ API Gateway ──▶ Lambda ──▶ DynamoDB
-#   builder ──Scan/Delete──────────────────────────────────────────────────▶ DynamoDB
+#   browser ──POST /api/subscribe──▶ CloudFront ──▶ Lambda (function URL) ──▶ DynamoDB
+#   builder ──Scan/Delete───────────────────────────────────────────────────▶ DynamoDB
 #
 # The /api/* CloudFront behaviour and origin are added in cloudfront.tf so the
 # endpoint is same-origin (no CORS) with the rest of the site.
@@ -82,53 +82,24 @@ resource "aws_lambda_function" "subscriptions" {
   }
 }
 
-# ── HTTP API in front of the Lambda ────────────────────────────────────────---
+# ── Lambda function URL in front of the Lambda ───────────────────────────────-
+# A plain function URL — no API Gateway. CloudFront fronts it same-origin at
+# /api/* (see cloudfront.tf), so there's no CORS to manage and the routing
+# (/api/subscribe vs /api/unsubscribe) is done in the handler. AuthType NONE +
+# the public invoke permission make it reachable; it was effectively public
+# behind API Gateway too.
 
-resource "aws_apigatewayv2_api" "push" {
-  name          = "bet-with-goodall-push"
-  protocol_type = "HTTP"
-
-  # Same-origin via CloudFront means CORS isn't strictly needed, but allow the
-  # site origins so a direct call still works during testing.
-  cors_configuration {
-    allow_origins = ["https://betwithgoodall.com", "https://www.betwithgoodall.com"]
-    allow_methods = ["POST", "OPTIONS"]
-    allow_headers = ["content-type"]
-    max_age       = 3600
-  }
+resource "aws_lambda_function_url" "subscriptions" {
+  function_name      = aws_lambda_function.subscriptions.function_name
+  authorization_type = "NONE"
 }
 
-resource "aws_apigatewayv2_integration" "subscriptions" {
-  api_id                 = aws_apigatewayv2_api.push.id
-  integration_type       = "AWS_PROXY"
-  integration_uri        = aws_lambda_function.subscriptions.invoke_arn
-  payload_format_version = "2.0"
-}
-
-resource "aws_apigatewayv2_route" "subscribe" {
-  api_id    = aws_apigatewayv2_api.push.id
-  route_key = "POST /api/subscribe"
-  target    = "integrations/${aws_apigatewayv2_integration.subscriptions.id}"
-}
-
-resource "aws_apigatewayv2_route" "unsubscribe" {
-  api_id    = aws_apigatewayv2_api.push.id
-  route_key = "POST /api/unsubscribe"
-  target    = "integrations/${aws_apigatewayv2_integration.subscriptions.id}"
-}
-
-resource "aws_apigatewayv2_stage" "default" {
-  api_id      = aws_apigatewayv2_api.push.id
-  name        = "$default"
-  auto_deploy = true
-}
-
-resource "aws_lambda_permission" "apigw_invoke" {
-  statement_id  = "AllowAPIGatewayInvoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.subscriptions.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.push.execution_arn}/*/*"
+resource "aws_lambda_permission" "function_url" {
+  statement_id           = "AllowPublicFunctionUrl"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_name          = aws_lambda_function.subscriptions.function_name
+  principal              = "*"
+  function_url_auth_type = "NONE"
 }
 
 # ── VAPID keys (Web Push signing) ──────────────────────────────────────────---

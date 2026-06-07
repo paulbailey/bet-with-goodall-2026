@@ -57,7 +57,7 @@ A group of friends (including Goodall) have placed several shared accumulator be
   match finishes. The push shows the score and a call to action; tapping it
   opens a `/match/<id>` page detailing how the result moved the group's pending
   bets. This needs a little server-side plumbing (a DynamoDB subscription store
-  fronted by API Gateway + Lambda, the builder signing pushes with a VAPID key,
+  fronted by a Lambda function URL, the builder signing pushes with a VAPID key,
   and a per-match `data/match-results.json` file feeding the detail page), but
   the *request-time* path for the site itself stays static — the API lives at a
   separate `/api/*` behaviour. See `docs/architecture.md` → Push notifications
