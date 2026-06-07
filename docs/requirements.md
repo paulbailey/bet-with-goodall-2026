@@ -48,5 +48,15 @@ A group of friends (including Goodall) have placed several shared accumulator be
 - Per-user accounts or individual bet tracking.
 - Knock-out round or top-scorer bets (group winners only for now).
 - Editing bets at runtime.
-- Push notifications.
 - Historical results or bet history beyond the current tournament.
+
+## Added later (originally out of scope)
+
+- **Installable PWA + push notifications.** The site is now an installable,
+  offline-capable PWA, and visitors can opt in to a push notification when each
+  match finishes — carrying the score and a one-line summary of how the result
+  shifted the group's pending bets. This needs a little server-side plumbing
+  (a DynamoDB subscription store fronted by API Gateway + Lambda, and the
+  builder signing pushes with a VAPID key), but the *request-time* path for the
+  site itself stays static — the API lives at a separate `/api/*` behaviour.
+  See `docs/architecture.md` → Push notifications and `builder/README.md`.

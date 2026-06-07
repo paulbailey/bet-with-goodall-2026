@@ -42,3 +42,23 @@ output "frontend_deployer_role_arn" {
   description = "Set this as the AWS_ROLE_ARN variable in the GitHub repo Actions settings"
   value       = aws_iam_role.frontend_deployer.arn
 }
+
+output "push_subscriptions_table" {
+  description = "DynamoDB table the builder reads to send Web Push notifications (set as PUSH_TABLE)"
+  value       = aws_dynamodb_table.push_subscriptions.name
+}
+
+output "push_api_endpoint" {
+  description = "Direct API Gateway endpoint for the push-subscription API (also fronted same-origin at /api/* via CloudFront)"
+  value       = aws_apigatewayv2_api.push.api_endpoint
+}
+
+output "vapid_public_parameter_name" {
+  description = "SSM parameter to populate with the VAPID public key (also set as the VITE_VAPID_PUBLIC_KEY Actions variable)"
+  value       = aws_ssm_parameter.vapid_public.name
+}
+
+output "vapid_private_parameter_name" {
+  description = "SSM parameter to populate with the VAPID private key"
+  value       = aws_ssm_parameter.vapid_private.name
+}

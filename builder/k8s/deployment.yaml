@@ -87,6 +87,26 @@ spec:
                   name: bet-builder
                   key: ANTHROPIC_API_KEY
                   optional: true
+            # Web Push (optional). Without VAPID_PRIVATE_KEY the builder still
+            # tracks results and writes state — it just doesn't send pushes.
+            # PUSH_TABLE + the IRSA role's DynamoDB permissions let it read
+            # subscriptions; the public key is informational on this side.
+            - name: PUSH_TABLE
+              value: "bet-with-goodall-push-subscriptions"
+            - name: VAPID_SUBJECT
+              value: "https://betwithgoodall.com"
+            - name: VAPID_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: bet-builder
+                  key: VAPID_PUBLIC_KEY
+                  optional: true
+            - name: VAPID_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: bet-builder
+                  key: VAPID_PRIVATE_KEY
+                  optional: true
           volumeMounts:
             - name: aws-token
               mountPath: /var/run/secrets/eks.amazonaws.com/serviceaccount

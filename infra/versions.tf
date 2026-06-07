@@ -14,6 +14,11 @@ terraform {
       source  = "hashicorp/aws"
       version = ">= 5.0, < 7.0"
     }
+    # Used to zip the push-subscription Lambda source at plan time.
+    archive = {
+      source  = "hashicorp/archive"
+      version = ">= 2.0"
+    }
   }
 }
 

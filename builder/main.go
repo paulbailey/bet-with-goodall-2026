@@ -60,13 +60,28 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	summaryGen := setupSummary(env, logger)
+	// One Anthropic client, shared by the daily summary and the match-result push
+	// narration. Nil when no key is configured — both features fall back to
+	// templated text.
+	var anth *anthropicClient
+	if env.AnthropicKey != "" {
+		anth = newAnthropicClient(env.AnthropicKey, env.AnthropicModel, logger)
+		logger.Info("anthropic narration enabled", "model", env.AnthropicModel)
+	}
+
+	summaryGen := setupSummary(env, anth, logger)
+	notifier := setupPush(ctx, env, logger)
 
 	betfair := setupBetfair(ctx, env, logger)
 	pairs := finalistPairs(cfg)
 	var bundle *oddsBundle
 
 	var matches []Match
+	// Match-result push tracking: the previous cycle's fixture statuses and bet
+	// snapshot, so we can detect a match finishing and attribute the bet movement
+	// to it. Both stay nil until the first cycle completes (no replay on restart).
+	var prevMatchStatus map[string]string
+	var prevBetSnap map[string]betSnap
 
 	for {
 		newMatches, err := provider.GetMatches(ctx)
@@ -111,6 +126,22 @@ func main() {
 
 			if summaryGen != nil {
 				summaryGen.maybeGenerate(ctx, state, matches)
+			}
+
+			// Push a notification for any match that finished since the last
+			// cycle, summarising how it moved the group's bets. The movement is
+			// measured against the previous cycle's snapshot, captured below.
+			if notifier != nil {
+				infos := collectBets(state)
+				curSnap := snapshot(infos)
+				if finished := newlyFinished(prevMatchStatus, matches); len(finished) > 0 {
+					risers, fallers, settled := computeMovers(prevBetSnap, infos)
+					for _, fm := range finished {
+						notifier.send(ctx, buildMatchNotification(ctx, fm, risers, fallers, settled, anth, logger))
+					}
+				}
+				prevMatchStatus = statusMap(matches)
+				prevBetSnap = curSnap
 			}
 		}
 
@@ -203,7 +234,7 @@ func refreshOdds(ctx context.Context, bf *betfairClient, groups []GroupStanding,
 // state writer (local dir or S3 bucket), the tournament-day timezone, and an
 // Anthropic client when an API key is set (otherwise narration is templated).
 // Returns nil to disable the feature when the store can't be created.
-func setupSummary(env Env, logger *slog.Logger) *summaryGenerator {
+func setupSummary(env Env, anth *anthropicClient, logger *slog.Logger) *summaryGenerator {
 	store, err := newBlobStore(env, logger)
 	if err != nil {
 		logger.Warn("daily summary disabled (blob store unavailable)", "err", err)
@@ -216,10 +247,8 @@ func setupSummary(env Env, logger *slog.Logger) *summaryGenerator {
 		loc = time.UTC
 	}
 
-	var anth *anthropicClient
-	if env.AnthropicKey != "" {
-		anth = newAnthropicClient(env.AnthropicKey, env.AnthropicModel, logger)
-		logger.Info("daily summary enabled (Claude narration)", "model", env.AnthropicModel, "tz", loc.String())
+	if anth != nil {
+		logger.Info("daily summary enabled (Claude narration)", "tz", loc.String())
 	} else {
 		logger.Info("daily summary enabled (templated narration — no ANTHROPIC_API_KEY)", "tz", loc.String())
 	}

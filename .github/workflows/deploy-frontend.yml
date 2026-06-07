@@ -42,6 +42,12 @@ jobs:
 
       - name: Build
         working-directory: web
+        # VITE_VAPID_PUBLIC_KEY is the public half of the Web Push VAPID keypair.
+        # It's non-secret and baked into the bundle so the browser can subscribe;
+        # set it as a repo Actions variable. Absent ⇒ the match-alerts opt-in
+        # hides itself and the rest of the site builds unchanged.
+        env:
+          VITE_VAPID_PUBLIC_KEY: ${{ vars.VITE_VAPID_PUBLIC_KEY }}
         run: npm run build
 
       - name: Configure AWS credentials

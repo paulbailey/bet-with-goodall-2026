@@ -3,6 +3,7 @@
   import type { TournamentState, DailySummaryFile } from "./types";
   import Header from "./components/Header.svelte";
   import SummaryBar from "./components/SummaryBar.svelte";
+  import PushOptIn from "./components/PushOptIn.svelte";
   import DailySummary from "./components/DailySummary.svelte";
   import DailySummaryPage from "./components/DailySummaryPage.svelte";
   import MaxPayoutPage from "./components/MaxPayoutPage.svelte";
@@ -133,6 +134,7 @@
   {:else}
     <main class="app-content">
       <SummaryBar {data} onNavigate={navigate} />
+      <PushOptIn />
       {#if latestSummary}
         <DailySummary summary={latestSummary} onNavigate={navigate} />
       {/if}

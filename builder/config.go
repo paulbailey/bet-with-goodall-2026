@@ -34,6 +34,16 @@ type Env struct {
 	SummaryTZ       string
 	SummaryKey      string // public file the frontend reads
 	SummaryStateKey string // builder-private snapshot state
+
+	// Web Push (all optional). When VapidPrivate and PushTable are both set the
+	// builder sends a push notification after each match finishes. The private
+	// key signs the push; the public key is informational here (the frontend has
+	// its own copy baked in at build time). Subject is the VAPID "sub" claim — a
+	// mailto: or https: URL the push service can contact.
+	VapidPublic  string
+	VapidPrivate string
+	VapidSubject string
+	PushTable    string // DynamoDB table of subscriptions
 }
 
 func loadEnv() Env {
@@ -54,6 +64,11 @@ func loadEnv() Env {
 		SummaryTZ:       getEnv("SUMMARY_TZ", "America/New_York"),
 		SummaryKey:      getEnv("SUMMARY_KEY", "data/daily-summary.json"),
 		SummaryStateKey: getEnv("SUMMARY_STATE_KEY", "data/summary-state.json"),
+
+		VapidPublic:  os.Getenv("VAPID_PUBLIC_KEY"),
+		VapidPrivate: os.Getenv("VAPID_PRIVATE_KEY"),
+		VapidSubject: getEnv("VAPID_SUBJECT", "https://betwithgoodall.com"),
+		PushTable:    os.Getenv("PUSH_TABLE"),
 	}
 	if env.LocalOutput == "" {
 		env.Bucket = mustEnv("S3_BUCKET")
