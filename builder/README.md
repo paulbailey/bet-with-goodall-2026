@@ -155,8 +155,8 @@ picture.
 **How it fits together:**
 
 1. The frontend asks the browser to subscribe (with the VAPID *public* key) and
-   POSTs the subscription to `/api/subscribe`, a CloudFront → API Gateway →
-   Lambda → DynamoDB path provisioned in `infra/push.tf`.
+   POSTs the subscription to `/api/subscribe`, a CloudFront → Lambda function URL
+   → DynamoDB path provisioned in `infra/push.tf`.
 2. Each poll cycle the builder diffs fixture statuses against the previous
    cycle. For any match that just turned `FINISHED` it:
    - records a `MatchResult` (score, recap, risers/fallers/settled) into the

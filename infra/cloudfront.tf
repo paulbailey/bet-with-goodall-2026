@@ -21,11 +21,11 @@ resource "aws_cloudfront_distribution" "site" {
     origin_access_control_id = aws_cloudfront_origin_access_control.site.id
   }
 
-  # Push-subscription API (API Gateway HTTP API) served same-origin under /api/*
+  # Push-subscription API (Lambda function URL) served same-origin under /api/*
   # so the static site can POST subscriptions without CORS.
   origin {
-    domain_name = replace(aws_apigatewayv2_api.push.api_endpoint, "https://", "")
-    origin_id   = "apigw-push"
+    domain_name = trimsuffix(replace(aws_lambda_function_url.subscriptions.function_url, "https://", ""), "/")
+    origin_id   = "lambda-push"
 
     custom_origin_config {
       http_port              = 80
@@ -60,12 +60,13 @@ resource "aws_cloudfront_distribution" "site" {
     cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
   }
 
-  # /api/*: forward to the push-subscription API Gateway. No caching, and pass
-  # everything through except the Host header (API Gateway rejects a mismatched
-  # Host) via the managed AllViewerExceptHostHeader origin-request policy.
+  # /api/*: forward to the push-subscription Lambda function URL. No caching, and
+  # pass everything through except the Host header (the origin needs its own
+  # lambda-url host for TLS/SNI, not the viewer's) via the managed
+  # AllViewerExceptHostHeader origin-request policy.
   ordered_cache_behavior {
     path_pattern           = "/api/*"
-    target_origin_id       = "apigw-push"
+    target_origin_id       = "lambda-push"
     viewer_protocol_policy = "redirect-to-https"
     compress               = true
     allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
