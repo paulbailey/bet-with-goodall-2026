@@ -94,7 +94,7 @@ Manages:
 - S3 bucket (private, versioning on, no public access).
 - CloudFront distribution (OAC → S3, HTTPS only, default TTL 60 s so data refreshes are visible promptly). Also fronts the push-subscription API at `/api/*` (see Push notifications).
 - IAM role for the builder (trust policy: `sts:AssumeRoleWithWebIdentity` from the homelab cluster's OIDC provider, limited to `s3:PutObject`/`s3:GetObject` on the bucket and `dynamodb:Scan`/`DeleteItem` on the subscription table).
-- Push subscription store: DynamoDB table + API Gateway HTTP API + Lambda (`infra/push.tf`).
+- Push subscription store: DynamoDB table + Lambda (exposed via a function URL) (`infra/push.tf`).
 - Optional: Route 53 record + ACM certificate for a custom domain.
 
 State backend: Terraform Cloud.
@@ -111,9 +111,9 @@ doesn't break the "no server-side logic at request time" rule for the site
 itself:
 
 ```
- browser ──POST /api/subscribe──▶ CloudFront ──▶ API Gateway ──▶ Lambda ──▶ DynamoDB
-                                  (/api/* behaviour)                          │
- builder ──Scan / DeleteItem (IRSA) ─────────────────────────────────────────┘
+ browser ──POST /api/subscribe──▶ CloudFront ──▶ Lambda (function URL) ──▶ DynamoDB
+                                  (/api/* behaviour)                        │
+ builder ──Scan / DeleteItem (IRSA) ───────────────────────────────────────┘
         └─ signs Web Push (VAPID private key) ──▶ push services ──▶ browsers
 ```
 
@@ -121,8 +121,8 @@ itself:
   Enabling it requests notification permission, subscribes with the VAPID
   *public* key (baked in at build time via `VITE_VAPID_PUBLIC_KEY`), and POSTs
   the subscription to `/api/subscribe`. The endpoint is same-origin (a
-  CloudFront `/api/*` behaviour pointing at the API Gateway origin), so there's
-  no CORS to manage.
+  CloudFront `/api/*` behaviour pointing at the Lambda function URL origin), so
+  there's no CORS to manage.
 - **Storage:** a Lambda writes/deletes rows in a DynamoDB table keyed by a hash
   of the subscription endpoint. No auth — a subscription is origin-bound and
   only the holder of the VAPID private key can deliver to it.

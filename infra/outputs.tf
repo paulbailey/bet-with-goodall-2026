@@ -48,9 +48,9 @@ output "push_subscriptions_table" {
   value       = aws_dynamodb_table.push_subscriptions.name
 }
 
-output "push_api_endpoint" {
-  description = "Direct API Gateway endpoint for the push-subscription API (also fronted same-origin at /api/* via CloudFront)"
-  value       = aws_apigatewayv2_api.push.api_endpoint
+output "push_function_url" {
+  description = "Direct Lambda function URL for the push-subscription API (also fronted same-origin at /api/* via CloudFront)"
+  value       = aws_lambda_function_url.subscriptions.function_url
 }
 
 output "vapid_public_parameter_name" {
