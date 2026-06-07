@@ -33,6 +33,11 @@ output "fdb_api_key_parameter_name" {
   value       = aws_ssm_parameter.fdb_api_key.name
 }
 
+output "anthropic_api_key_parameter_name" {
+  description = "SSM parameter to populate with the real Anthropic API key (optional; daily-summary recap)"
+  value       = aws_ssm_parameter.anthropic_api_key.name
+}
+
 output "frontend_deployer_role_arn" {
   description = "Set this as the AWS_ROLE_ARN variable in the GitHub repo Actions settings"
   value       = aws_iam_role.frontend_deployer.arn
