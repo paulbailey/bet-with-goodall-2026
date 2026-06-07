@@ -14,6 +14,21 @@ resource "aws_ssm_parameter" "fdb_api_key" {
   }
 }
 
+# SSM parameter for the Anthropic API key used by the daily-summary recap.
+# Optional at runtime — without it the builder falls back to a templated
+# sentence — but creating it here ensures the ExternalSecret has the key to read
+# and gives you a place to drop the real value. Same placeholder pattern as above.
+resource "aws_ssm_parameter" "anthropic_api_key" {
+  name        = "/homelab/bet-with-goodall/builder/anthropic_api_key"
+  description = "Anthropic API key for the bet-with-goodall daily-summary recap"
+  type        = "SecureString"
+  value       = "REPLACE_ME_IN_AWS_PARAMETER_STORE"
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
 # Reference the existing OIDC provider created by the homelab-aws workspace.
 # This is a data source — it reads the existing resource without touching it.
 data "aws_iam_openid_connect_provider" "homelab" {
@@ -57,7 +72,10 @@ resource "aws_iam_role" "bet_builder" {
   assume_role_policy = data.aws_iam_policy_document.bet_builder_assume_role.json
 }
 
-# Minimal S3 permissions: list the bucket, read/write only state.json
+# Minimal S3 permissions: list the bucket, read/write the builder's data objects.
+# The builder writes state.json plus the daily-summary files
+# (daily-summary.json and the private summary-state.json snapshot), so the scope
+# is the data/ prefix rather than a single key.
 resource "aws_iam_role_policy" "bet_builder_s3" {
   name = "bet-builder-s3"
   role = aws_iam_role.bet_builder.id
@@ -72,13 +90,13 @@ resource "aws_iam_role_policy" "bet_builder_s3" {
         Resource = aws_s3_bucket.site.arn
       },
       {
-        Sid    = "ReadWriteStateJson"
+        Sid    = "ReadWriteData"
         Effect = "Allow"
         Action = [
           "s3:GetObject",
           "s3:PutObject",
         ]
-        Resource = "${aws_s3_bucket.site.arn}/data/state.json"
+        Resource = "${aws_s3_bucket.site.arn}/data/*"
       }
     ]
   })
