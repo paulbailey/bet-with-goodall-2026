@@ -127,9 +127,16 @@ itself:
   of the subscription endpoint. No auth — a subscription is origin-bound and
   only the holder of the VAPID private key can deliver to it.
 - **Sending:** each poll cycle the builder diffs fixture statuses against the
-  previous cycle; for any match that just finished it composes a notification
-  (score + a one-line bet-impact summary, reusing the daily-summary movers) and
-  sends it to every subscription, pruning any the push service reports as gone.
+  previous cycle. For any match that just finished it records a `MatchResult`
+  (score, recap, risers/fallers/settled, reusing the daily-summary movers) into
+  the rolling `data/match-results.json` archive, then — if push is enabled —
+  sends a notification carrying just the **score and a CTA** to every
+  subscription, pruning any the push service reports as gone.
+- **Detail page:** the notification deep-links to `/match/<id>`, a client-routed
+  PWA page that renders the bet changes for that match from
+  `data/match-results.json`. Keeping the detail on the page (not in the push
+  body) keeps the notification short and lets the page show the full breakdown.
+  The match-results file is generated whether or not push is configured.
 
 VAPID keys are generated once and stored in SSM (private) / a GitHub Actions
 variable (public). See `builder/README.md` → Push notifications.

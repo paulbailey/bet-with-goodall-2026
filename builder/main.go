@@ -70,6 +70,7 @@ func main() {
 	}
 
 	summaryGen := setupSummary(env, anth, logger)
+	matchResults := setupMatchResults(env, anth, logger)
 	notifier := setupPush(ctx, env, logger)
 
 	betfair := setupBetfair(ctx, env, logger)
@@ -128,16 +129,21 @@ func main() {
 				summaryGen.maybeGenerate(ctx, state, matches)
 			}
 
-			// Push a notification for any match that finished since the last
-			// cycle, summarising how it moved the group's bets. The movement is
-			// measured against the previous cycle's snapshot, captured below.
-			if notifier != nil {
+			// For any match that finished since the last cycle, record how it
+			// moved the group's bets (for the /match page) and push a notification
+			// deep-linking to it. The movement is measured against the previous
+			// cycle's snapshot, captured below.
+			if matchResults != nil {
 				infos := collectBets(state)
 				curSnap := snapshot(infos)
 				if finished := newlyFinished(prevMatchStatus, matches); len(finished) > 0 {
 					risers, fallers, settled := computeMovers(prevBetSnap, infos)
 					for _, fm := range finished {
-						notifier.send(ctx, buildMatchNotification(ctx, fm, risers, fallers, settled, anth, logger))
+						id := matchSlug(fm)
+						matchResults.record(ctx, id, fm, risers, fallers, settled)
+						if notifier != nil {
+							notifier.send(ctx, buildMatchNotification(fm, id))
+						}
 					}
 				}
 				prevMatchStatus = statusMap(matches)

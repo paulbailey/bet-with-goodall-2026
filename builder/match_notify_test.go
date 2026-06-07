@@ -51,7 +51,7 @@ func TestMatchScoreLine(t *testing.T) {
 	}
 }
 
-func TestMatchTemplateBody(t *testing.T) {
+func TestMatchTemplateParagraph(t *testing.T) {
 	// Settled bets lead, then the biggest swing.
 	settled := []Settled{
 		{Label: "Spain treble", Category: "Match acca", Status: "won"},
@@ -60,7 +60,7 @@ func TestMatchTemplateBody(t *testing.T) {
 	risers := []Mover{{Label: "Spain to win the tournament", PrevProb: 0.10, NewProb: 0.15, Ratio: 1.5}}
 	fallers := []Mover{{Label: "Japan finalists", PrevProb: 0.04, NewProb: 0.01, Ratio: 0.25}}
 
-	body := matchTemplateBody(risers, fallers, settled)
+	body := matchTemplateParagraph(risers, fallers, settled)
 	if !strings.Contains(body, "Landed: Spain treble.") {
 		t.Errorf("missing win: %q", body)
 	}
@@ -73,8 +73,44 @@ func TestMatchTemplateBody(t *testing.T) {
 	}
 
 	// Nothing moved or settled → a graceful default.
-	if got := matchTemplateBody(nil, nil, nil); got != "No change to the group's bets." {
+	if got := matchTemplateParagraph(nil, nil, nil); got != "No change to the group's bets." {
 		t.Errorf("unexpected empty-state body: %q", got)
+	}
+}
+
+func TestMatchSlug(t *testing.T) {
+	m := Match{
+		UtcDate:  time.Date(2026, 6, 20, 19, 0, 0, 0, time.UTC),
+		HomeTeam: "South Korea", AwayTeam: "Côte d'Ivoire",
+	}
+	if got, want := matchSlug(m), "2026-06-20-south-korea-v-c-te-d-ivoire"; got != want {
+		t.Fatalf("got %q want %q", got, want)
+	}
+}
+
+func TestMatchGroupLabel(t *testing.T) {
+	cases := map[string]Match{
+		"Group A": {Group: "GROUP_A", Stage: "GROUP_STAGE"},
+		"Last 16": {Group: "", Stage: "LAST_16"},
+	}
+	for want, m := range cases {
+		if got := matchGroupLabel(m); got != want {
+			t.Errorf("matchGroupLabel(%+v) = %q, want %q", m, got, want)
+		}
+	}
+}
+
+func TestBuildMatchNotificationDeepLinks(t *testing.T) {
+	m := Match{HomeTeam: "Spain", AwayTeam: "Japan", HomeScore: ptr(2), AwayScore: ptr(0)}
+	n := buildMatchNotification(m, "2026-06-20-spain-v-japan")
+	if n.Title != "Full time: Spain 2–0 Japan" {
+		t.Errorf("unexpected title: %q", n.Title)
+	}
+	if n.URL != "/match/2026-06-20-spain-v-japan" {
+		t.Errorf("unexpected url: %q", n.URL)
+	}
+	if n.Body == "" {
+		t.Errorf("expected a CTA body")
 	}
 }
 

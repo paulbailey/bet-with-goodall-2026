@@ -48,6 +48,7 @@ jq '.expected, (.bets[]|{id,status,probability,expected_return})' state.json
 | `SUMMARY_TZ` | no | `America/New_York` | timezone used to group fixtures into a "tournament day" |
 | `SUMMARY_KEY` | no | `data/daily-summary.json` | public summary object the frontend reads |
 | `SUMMARY_STATE_KEY` | no | `data/summary-state.json` | builder-private probability snapshot store |
+| `MATCH_RESULTS_KEY` | no | `data/match-results.json` | public per-match bet-changes file the `/match` page reads |
 | `VAPID_PRIVATE_KEY` | for push | — | VAPID private key; enables match-result push notifications |
 | `VAPID_PUBLIC_KEY` | for push | — | VAPID public key (must match the one baked into the frontend) |
 | `VAPID_SUBJECT` | no | `https://betwithgoodall.com` | VAPID `sub` claim (a `mailto:` or `https:` URL) |
@@ -142,11 +143,14 @@ to `daily-summary.json`.
 
 ## Push notifications
 
-The site is an installable PWA, and the builder sends a Web Push notification
-each time a match finishes — the score plus a one-line summary of how the
-result moved the group's pending bets (Claude when `ANTHROPIC_API_KEY` is set,
-otherwise a templated sentence built from the same risers/fallers/settled data
-the daily summary uses).
+The site is an installable PWA. Each time a match finishes the builder records
+how the result moved the group's bets and sends a Web Push. The push itself
+carries only the **score** and a call to action; tapping it deep-links to
+`/match/<id>`, a PWA page that renders the **detail** — the recap, the bets that
+landed or went bust, and the biggest likelihood swings — from
+`data/match-results.json`. Keeping the detail on the page (rather than in the
+notification body) means the push stays short and the page can show the full
+picture.
 
 **How it fits together:**
 
@@ -154,12 +158,18 @@ the daily summary uses).
    POSTs the subscription to `/api/subscribe`, a CloudFront → API Gateway →
    Lambda → DynamoDB path provisioned in `infra/push.tf`.
 2. Each poll cycle the builder diffs fixture statuses against the previous
-   cycle. For any match that just turned `FINISHED`, it composes a notification
-   and signs it with the VAPID *private* key, sending to every subscription in
-   the DynamoDB table (`PUSH_TABLE`). Subscriptions the push service reports as
-   gone (HTTP 404/410) are pruned.
-3. The service worker (`web/src/sw.ts`) shows the notification and focuses/opens
-   the site when it's tapped.
+   cycle. For any match that just turned `FINISHED` it:
+   - records a `MatchResult` (score, recap, risers/fallers/settled) into the
+     rolling archive `data/match-results.json` (`MATCH_RESULTS_KEY`). The recap
+     is Claude-written when `ANTHROPIC_API_KEY` is set, otherwise templated from
+     the same movers data the daily summary uses. This happens whether or not
+     push is configured, so the `/match` page is always populated.
+   - if push is enabled, signs a notification (score + CTA, deep-linking to
+     `/match/<id>`) with the VAPID *private* key and sends it to every
+     subscription in `PUSH_TABLE`. Subscriptions the push service reports as gone
+     (HTTP 404/410) are pruned.
+3. The service worker (`web/src/sw.ts`) shows the notification and opens the
+   deep link when it's tapped.
 
 On a fresh start the builder seeds its fixture-status baseline without sending
 anything, so a restart never replays already-finished matches.

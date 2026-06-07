@@ -34,6 +34,7 @@ type Env struct {
 	SummaryTZ       string
 	SummaryKey      string // public file the frontend reads
 	SummaryStateKey string // builder-private snapshot state
+	MatchResultsKey string // public per-match bet-changes file the /match page reads
 
 	// Web Push (all optional). When VapidPrivate and PushTable are both set the
 	// builder sends a push notification after each match finishes. The private
@@ -64,6 +65,7 @@ func loadEnv() Env {
 		SummaryTZ:       getEnv("SUMMARY_TZ", "America/New_York"),
 		SummaryKey:      getEnv("SUMMARY_KEY", "data/daily-summary.json"),
 		SummaryStateKey: getEnv("SUMMARY_STATE_KEY", "data/summary-state.json"),
+		MatchResultsKey: getEnv("MATCH_RESULTS_KEY", "data/match-results.json"),
 
 		VapidPublic:  os.Getenv("VAPID_PUBLIC_KEY"),
 		VapidPrivate: os.Getenv("VAPID_PRIVATE_KEY"),

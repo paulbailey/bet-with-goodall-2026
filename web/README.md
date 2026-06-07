@@ -47,5 +47,11 @@ npm i -D sharp && node scripts/gen-icons.mjs && npm uninstall sharp
 The "Match alerts" toggle (`PushOptIn.svelte`) subscribes the browser with the
 VAPID public key and POSTs the subscription to `/api/subscribe`. The public key
 comes from `VITE_VAPID_PUBLIC_KEY` at build time; when it's unset the toggle
-hides itself and everything else works unchanged. See `builder/README.md` →
-Push notifications for the end-to-end flow and key generation.
+hides itself and everything else works unchanged.
+
+When a match finishes, the push shows the score and deep-links to
+`/match/<id>` (`MatchResultPage.svelte`), which renders how the result moved the
+bets from `data/match-results.json`. That route is self-contained — it fetches
+its own data — so the deep link works even if the dashboard's `state.json` is
+slow. See `builder/README.md` → Push notifications for the end-to-end flow and
+key generation.

@@ -7,6 +7,7 @@
   import DailySummary from "./components/DailySummary.svelte";
   import DailySummaryPage from "./components/DailySummaryPage.svelte";
   import MaxPayoutPage from "./components/MaxPayoutPage.svelte";
+  import MatchResultPage from "./components/MatchResultPage.svelte";
   import BetGrid from "./components/BetGrid.svelte";
   import MatchAccaBets from "./components/MatchAccaBets.svelte";
   import MatchResultBets from "./components/MatchResultBets.svelte";
@@ -17,26 +18,37 @@
   import GroupStandings from "./components/GroupStandings.svelte";
 
   const POLL_INTERVAL_MS = 60_000;
+  // Routes reachable via in-app links. The match-detail page (/match/<id>) is
+  // only reached by a push-notification deep link, so it isn't a navigable
+  // target — it's handled separately as a view.
   type AppRoute = "/" | "/max-payout" | "/daily-summary";
+  type ViewRoute = AppRoute | "/match";
 
   let data = $state<TournamentState | null>(null);
   let summary = $state<DailySummaryFile | null>(null);
   let error = $state<string | null>(null);
-  let route = $state<AppRoute>("/");
+  let route = $state<ViewRoute>("/");
+  let matchId = $state<string | null>(null);
   let lastUpdatedAt: string | null = null;
   let lastSummaryAt: string | null = null;
 
   const latestSummary = $derived(summary?.summaries?.[0] ?? null);
 
-  function routeFromPath(pathname: string): AppRoute {
+  function routeFromPath(pathname: string): ViewRoute {
     const cleanPath = pathname.replace(/\/+$/, "") || "/";
     if (cleanPath === "/max-payout") return "/max-payout";
     if (cleanPath === "/daily-summary") return "/daily-summary";
+    if (cleanPath.startsWith("/match/")) return "/match";
     return "/";
   }
 
   function syncRoute() {
-    route = routeFromPath(window.location.pathname);
+    const cleanPath = window.location.pathname.replace(/\/+$/, "") || "/";
+    route = routeFromPath(cleanPath);
+    matchId =
+      route === "/match"
+        ? decodeURIComponent(cleanPath.slice("/match/".length))
+        : null;
   }
 
   function navigate(event: MouseEvent, to: AppRoute) {
@@ -122,7 +134,11 @@
   phase={data?.tournament_phase ?? null}
 />
 
-{#if error}
+{#if route === "/match"}
+  <!-- Self-contained: fetches its own data so a push deep-link works even if
+       the dashboard's state.json is slow or unavailable. -->
+  <MatchResultPage id={matchId} onNavigate={navigate} />
+{:else if error}
   <p class="state-message error">Failed to load data: {error}</p>
 {:else if !data}
   <p class="state-message">Loading…</p>
