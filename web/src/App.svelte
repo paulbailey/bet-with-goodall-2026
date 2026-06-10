@@ -6,6 +6,7 @@
   import PushOptIn from "./components/PushOptIn.svelte";
   import DailySummary from "./components/DailySummary.svelte";
   import DailySummaryPage from "./components/DailySummaryPage.svelte";
+  import TodaysMatches from "./components/TodaysMatches.svelte";
   import MaxPayoutPage from "./components/MaxPayoutPage.svelte";
   import MatchResultPage from "./components/MatchResultPage.svelte";
   import BetGrid from "./components/BetGrid.svelte";
@@ -78,6 +79,7 @@
       const json: TournamentState = await res.json();
       // state.json is an external feed; tolerate builder output that omits a
       // bet section (e.g. an older builder) so the page still renders.
+      json.matches ??= [];
       json.bets ??= [];
       json.top_scorer_bets ??= [];
       json.tournament_winner_bets ??= [];
@@ -149,6 +151,7 @@
     <DailySummaryPage file={summary} onNavigate={navigate} />
   {:else}
     <main class="app-content">
+      <TodaysMatches matches={data.matches} />
       <SummaryBar {data} onNavigate={navigate} />
       <PushOptIn />
       {#if latestSummary}
