@@ -6,6 +6,20 @@ export type FinalistBetStatus = 'alive' | 'won' | 'lost'
 export type MatchOutcome = 'win' | 'draw' | 'lose'
 export type TournamentPhase = 'pre_tournament' | 'group_stage' | 'knockout' | 'complete'
 
+// One fixture in the "Today's matches" section. state.json carries fixtures
+// from a UTC calendar day either side of now so any browser timezone can pick
+// out its local "today" — the component does that filtering client-side.
+export interface MatchFixture {
+  id: string // matches the /match/<id> deep-link slug
+  utc_date: string // kickoff, RFC3339
+  status: string // SCHEDULED | TIMED | IN_PLAY | PAUSED | FINISHED | ...
+  group: string // display label, e.g. "Group A" or "Last 16"
+  home: string
+  away: string
+  home_score: number | null
+  away_score: number | null
+}
+
 export interface TeamStanding {
   team: string
   played: number
@@ -201,6 +215,7 @@ export interface TournamentState {
   updated_at: string
   tournament_phase: TournamentPhase
   groups: Record<string, GroupState>
+  matches: MatchFixture[]
   bets: Bet[]
   top_scorer_bets: TopScorerBet[]
   tournament_winner_bets: TournamentWinnerBet[]

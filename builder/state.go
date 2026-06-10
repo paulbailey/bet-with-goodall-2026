@@ -1,6 +1,7 @@
 package main
 
 import (
+	"sort"
 	"strings"
 	"time"
 )
@@ -11,6 +12,7 @@ type StateJSON struct {
 	UpdatedAt            string                    `json:"updated_at"`
 	TournamentPhase      string                    `json:"tournament_phase"`
 	Groups               map[string]GroupJSON      `json:"groups"`
+	Matches              []MatchJSON               `json:"matches"`
 	Bets                 []BetJSON                 `json:"bets"`
 	TopScorerBets        []TopScorerBetJSON        `json:"top_scorer_bets"`
 	TournamentWinnerBets []TournamentWinnerBetJSON `json:"tournament_winner_bets"`
@@ -20,6 +22,21 @@ type StateJSON struct {
 	TopScorers           []TopScorerJSON           `json:"top_scorers"`
 	MaxPayout            MaxPayoutJSON             `json:"max_payout"`
 	Expected             *ExpectedJSON             `json:"expected,omitempty"`
+}
+
+// MatchJSON is one fixture in the dashboard's "Today's matches" section. The
+// builder emits fixtures from a UTC calendar day either side of now — wide
+// enough for any browser timezone (UTC-12 to UTC+14) to find its local "today"
+// in the list; the frontend does that filtering.
+type MatchJSON struct {
+	ID        string `json:"id"`       // matchSlug, matching the /match/<id> page
+	UtcDate   string `json:"utc_date"` // kickoff, RFC3339
+	Status    string `json:"status"`   // SCHEDULED | TIMED | IN_PLAY | PAUSED | FINISHED | ...
+	Group     string `json:"group"`    // display label, e.g. "Group A" or "Last 16"
+	Home      string `json:"home"`
+	Away      string `json:"away"`
+	HomeScore *int   `json:"home_score"`
+	AwayScore *int   `json:"away_score"`
 }
 
 type GroupJSON struct {
@@ -133,6 +150,7 @@ func buildState(cfg *Config, groups []GroupStanding, scorers []TopScorerEntry, m
 		UpdatedAt:            time.Now().UTC().Format(time.RFC3339),
 		TournamentPhase:      tournamentPhase(matches),
 		Groups:               buildGroups(groups),
+		Matches:              buildMatchWindow(matches, time.Now().UTC()),
 		Bets:                 buildBets(cfg.Bets, groups),
 		TopScorerBets:        buildTopScorerBets(cfg.TopScorerBets, scorers, groups),
 		TournamentWinnerBets: buildTournamentWinnerBets(cfg.TournamentWinnerBets, groups, matches),
@@ -172,6 +190,33 @@ func buildGroups(groups []GroupStanding) map[string]GroupJSON {
 		m[g.Group] = GroupJSON{Standings: standings, Complete: complete, Winner: winner}
 	}
 	return m
+}
+
+// buildMatchWindow returns the fixtures kicking off within a UTC calendar day
+// either side of now, sorted by kickoff. See MatchJSON for why the window is
+// three days wide.
+func buildMatchWindow(matches []Match, now time.Time) []MatchJSON {
+	windowStart := now.UTC().Truncate(24 * time.Hour).AddDate(0, 0, -1)
+	windowEnd := windowStart.AddDate(0, 0, 3)
+
+	out := []MatchJSON{}
+	for _, m := range matches {
+		if m.UtcDate.Before(windowStart) || !m.UtcDate.Before(windowEnd) {
+			continue
+		}
+		out = append(out, MatchJSON{
+			ID:        matchSlug(m),
+			UtcDate:   m.UtcDate.UTC().Format(time.RFC3339),
+			Status:    m.Status,
+			Group:     matchGroupLabel(m),
+			Home:      m.HomeTeam,
+			Away:      m.AwayTeam,
+			HomeScore: m.HomeScore,
+			AwayScore: m.AwayScore,
+		})
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].UtcDate < out[j].UtcDate })
+	return out
 }
 
 func buildBets(bets []BetConfig, groups []GroupStanding) []BetJSON {
