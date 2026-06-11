@@ -18,6 +18,7 @@ export interface MatchFixture {
   away: string
   home_score: number | null
   away_score: number | null
+  minute?: number | null // current minute of play; only set while in play
 }
 
 export interface TeamStanding {

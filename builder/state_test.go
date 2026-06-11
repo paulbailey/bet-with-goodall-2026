@@ -29,6 +29,8 @@ func TestBuildMatchWindow(t *testing.T) {
 		mk(time.Date(2026, 6, 15, 15, 0, 0, 0, time.UTC), "England", "Croatia", "IN_PLAY"),
 	}
 	matches[4].HomeScore, matches[4].AwayScore = one(2), one(1)
+	matches[4].Minute = one(56)
+	matches[3].Minute = one(90) // provider keeps minute set after full time
 
 	got := buildMatchWindow(matches, now)
 
@@ -57,5 +59,11 @@ func TestBuildMatchWindow(t *testing.T) {
 	}
 	if got[0].HomeScore != nil {
 		t.Errorf("France match: home_score = %v, want nil (provider gave none)", got[0].HomeScore)
+	}
+	if live.Minute == nil || *live.Minute != 56 {
+		t.Errorf("live minute = %v, want 56", live.Minute)
+	}
+	if got[0].Minute != nil {
+		t.Errorf("finished match: minute = %v, want nil (only emitted while in play)", *got[0].Minute)
 	}
 }

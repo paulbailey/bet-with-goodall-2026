@@ -37,6 +37,7 @@ type MatchJSON struct {
 	Away      string `json:"away"`
 	HomeScore *int   `json:"home_score"`
 	AwayScore *int   `json:"away_score"`
+	Minute    *int   `json:"minute,omitempty"` // current minute of play; only set while in play
 }
 
 type GroupJSON struct {
@@ -204,7 +205,7 @@ func buildMatchWindow(matches []Match, now time.Time) []MatchJSON {
 		if m.UtcDate.Before(windowStart) || !m.UtcDate.Before(windowEnd) {
 			continue
 		}
-		out = append(out, MatchJSON{
+		mj := MatchJSON{
 			ID:        matchSlug(m),
 			UtcDate:   m.UtcDate.UTC().Format(time.RFC3339),
 			Status:    m.Status,
@@ -213,7 +214,13 @@ func buildMatchWindow(matches []Match, now time.Time) []MatchJSON {
 			Away:      m.AwayTeam,
 			HomeScore: m.HomeScore,
 			AwayScore: m.AwayScore,
-		})
+		}
+		// The provider keeps minute populated after full time (e.g. 90); only
+		// pass it through while the clock is actually running.
+		if m.Status == "IN_PLAY" || m.Status == "PAUSED" {
+			mj.Minute = m.Minute
+		}
+		out = append(out, mj)
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].UtcDate < out[j].UtcDate })
 	return out

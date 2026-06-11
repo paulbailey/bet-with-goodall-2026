@@ -31,6 +31,7 @@ type Match struct {
 	Winner    string // HOME_TEAM | AWAY_TEAM | DRAW (empty if unfinished/unknown)
 	HomeScore *int   // nil until the API publishes a score
 	AwayScore *int
+	Minute    *int // current minute of play; nil before kickoff or if the provider omits it
 }
 
 type TopScorerEntry struct {
