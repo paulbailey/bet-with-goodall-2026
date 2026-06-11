@@ -8,6 +8,7 @@
 
   const PHASE_LABELS: Record<string, string> = {
     pre_tournament: "Pre-Tournament",
+    starts_today: "Starts Today",
     group_stage: "Group Stage",
     knockout: "Knockout Rounds",
     complete: "Tournament Complete",
@@ -29,6 +30,13 @@
     phase === "group_stage" || phase === "knockout" || phase === "complete",
   );
   let showCountdown = $derived(!started && daysToGo > 0);
+
+  // The builder only flips the phase off pre_tournament once the first match
+  // actually kicks off, so on the opening day itself state.json still says
+  // pre_tournament. Show "Starts Today" instead of "Pre-Tournament" then.
+  let displayPhase = $derived(
+    phase === "pre_tournament" && daysToGo <= 0 ? "starts_today" : phase,
+  );
 
   function formatTimestamp(iso: string): string {
     return new Date(iso).toLocaleString(undefined, {
@@ -53,8 +61,8 @@
           {daysToGo} {daysToGo === 1 ? "day" : "days"} to go
         </span>
       {/if}
-      {#if phase}
-        <span class="phase-badge">{PHASE_LABELS[phase] ?? phase}</span>
+      {#if displayPhase}
+        <span class="phase-badge">{PHASE_LABELS[displayPhase] ?? displayPhase}</span>
       {/if}
       {#if updatedAt}
         <span class="updated-at">Updated {formatTimestamp(updatedAt)}</span>
