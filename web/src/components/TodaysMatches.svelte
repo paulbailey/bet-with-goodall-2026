@@ -55,11 +55,12 @@
   type Badge = { text: string; kind: 'live' | 'ft' | 'note' } | null
 
   // Maps the provider's match status to a display badge; null (nothing to show
-  // beyond the kickoff time) for matches that haven't started.
-  function badge(status: string): Badge {
-    switch (status) {
+  // beyond the kickoff time) for matches that haven't started. In-play matches
+  // show the game clock (e.g. 56') when the provider supplies it.
+  function badge(m: MatchFixture): Badge {
+    switch (m.status) {
       case 'IN_PLAY':
-        return { text: 'LIVE', kind: 'live' }
+        return { text: m.minute != null ? `${m.minute}'` : 'LIVE', kind: 'live' }
       case 'PAUSED':
         return { text: 'HT', kind: 'live' }
       case 'FINISHED':
@@ -69,7 +70,7 @@
         return null
       default:
         // POSTPONED, SUSPENDED, CANCELLED, AWARDED, ...
-        return { text: status.charAt(0) + status.slice(1).toLowerCase(), kind: 'note' }
+        return { text: m.status.charAt(0) + m.status.slice(1).toLowerCase(), kind: 'note' }
     }
   }
 </script>
@@ -82,15 +83,16 @@
     {:else}
       <div class="match-grid">
         {#each todays as m (m.id)}
-          {@const b = badge(m.status)}
+          {@const b = badge(m)}
           {@const note = dayNote(m.utc_date)}
           <article class="fixture" class:fixture-live={b?.kind === 'live'}>
             <div class="fixture-meta">
               <span class="fixture-group">{m.group}</span>
-              <span class="fixture-time">
-                {kickoff(m.utc_date)}{#if note}
-                  <span class="fixture-day-note">{note}</span>{/if}
-              </span>
+              {#if m.status !== 'FINISHED'}
+                <span class="fixture-time">
+                  {#if note}<span class="fixture-day-note">{note}</span>{/if}{kickoff(m.utc_date)}
+                </span>
+              {/if}
               {#if b}
                 <span class="fixture-badge badge-{b.kind}">{b.text}</span>
               {/if}
@@ -160,14 +162,16 @@
     text-transform: uppercase;
   }
 
-  .fixture-time {
-    margin-left: auto;
+  /* Push everything after the group label (time, badge) to the right, even
+     when the kickoff time is omitted for finished matches. */
+  .fixture-group {
+    margin-right: auto;
   }
 
   .fixture-day-note {
     color: var(--wc-muted);
     font-weight: 600;
-    margin-left: 0.3rem;
+    margin-right: 0.3rem;
     text-transform: none;
   }
 

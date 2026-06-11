@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -74,12 +75,36 @@ type fdStandingsResp struct {
 	} `json:"standings"`
 }
 
+// fdMinute decodes the match "minute" field. The docs show an integer, but
+// tolerate a stringified number and treat anything else as unknown — a
+// cosmetic field must never fail the whole matches poll.
+type fdMinute struct{ v *int }
+
+func (m *fdMinute) UnmarshalJSON(b []byte) error {
+	if string(b) == "null" {
+		return nil
+	}
+	var n int
+	if err := json.Unmarshal(b, &n); err == nil {
+		m.v = &n
+		return nil
+	}
+	var s string
+	if err := json.Unmarshal(b, &s); err == nil {
+		if n, err := strconv.Atoi(s); err == nil {
+			m.v = &n
+		}
+	}
+	return nil
+}
+
 type fdMatchesResp struct {
 	Matches []struct {
-		UtcDate  string `json:"utcDate"`
-		Status   string `json:"status"`
-		Stage    string `json:"stage"`
-		Group    string `json:"group"`
+		UtcDate  string   `json:"utcDate"`
+		Status   string   `json:"status"`
+		Stage    string   `json:"stage"`
+		Group    string   `json:"group"`
+		Minute   fdMinute `json:"minute"`
 		HomeTeam struct {
 			Name string `json:"name"`
 		} `json:"homeTeam"`
@@ -173,6 +198,7 @@ func (c *footballDataClient) GetMatches(ctx context.Context) ([]Match, error) {
 			Winner:    m.Score.Winner,
 			HomeScore: m.Score.FullTime.Home,
 			AwayScore: m.Score.FullTime.Away,
+			Minute:    m.Minute.v,
 		})
 	}
 	return matches, nil
