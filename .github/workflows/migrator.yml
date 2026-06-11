@@ -1,0 +1,44 @@
+name: Migrate secrets to infra
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+
+    env:
+      GH_TOKEN: ${{ secrets.INFRA_SECRET_MIGRATOR_PAT }}
+
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      BLUESKY_USERNAME: ${{ secrets.BLUESKY_USERNAME }}
+      BLUESKY_PASSWORD: ${{ secrets.BLUESKY_PASSWORD }}
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+      AWS_SITE_DEPLOYER_ROLE_ARN: ${{ secrets.AWS_SITE_DEPLOYER_ROLE_ARN }}
+
+    steps:
+      - name: Copy known secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for name in \
+            CODECOV_TOKEN \
+            BLUESKY_USERNAME \
+            BLUESKY_PASSWORD \
+            GOOGLE_API_KEY \
+            VAPID_PRIVATE_KEY \
+            AWS_SITE_DEPLOYER_ROLE_ARN
+          do
+            value="${!name:-}"
+            if [ -n "$value" ]; then
+              printf '%s' "$value" | gh secret set "$name" -R paulbailey/infra
+              echo "Set $name"
+            else
+              echo "Skipped $name; not present in this repo"
+            fi
+          done
