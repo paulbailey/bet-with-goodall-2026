@@ -8,8 +8,8 @@ export default defineConfig({
     svelte(),
     VitePWA({
       // A new build ships a new SW that takes over automatically (see
-      // skipWaiting/clients.claim in src/sw.ts); the page picks up the update on
-      // its next poll without a manual refresh.
+      // skipWaiting/clients.claim in src/sw.ts); main.ts reloads the page when
+      // that happens and forces update checks when an installed PWA is resumed.
       registerType: 'autoUpdate',
       // Hand-written SW (src/sw.ts) so we can add push + notificationclick
       // handlers on top of Workbox precaching.
