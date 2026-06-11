@@ -7,8 +7,8 @@ export type MatchOutcome = 'win' | 'draw' | 'lose'
 export type TournamentPhase = 'pre_tournament' | 'group_stage' | 'knockout' | 'complete'
 
 // One fixture in the "Today's matches" section. state.json carries fixtures
-// from a UTC calendar day either side of now so any browser timezone can pick
-// out its local "today" — the component does that filtering client-side.
+// from a UTC calendar day either side of now — wide enough to cover the
+// current tournament-local day, which the component picks out client-side.
 export interface MatchFixture {
   id: string // matches the /match/<id> deep-link slug
   utc_date: string // kickoff, RFC3339

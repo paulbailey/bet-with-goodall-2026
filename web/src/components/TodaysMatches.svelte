@@ -9,26 +9,47 @@
 
   let { matches }: Props = $props()
 
-  // state.json carries fixtures for a UTC day either side of now; pick out the
-  // ones kicking off on "today" in the browser's timezone. Recomputed every
-  // poll (data is reassigned each cycle), so the list rolls over at midnight.
+  // Matches are grouped into days by the tournament's local time, mirroring the
+  // builder's SUMMARY_TZ default, so "today" means the same set of fixtures for
+  // every visitor regardless of their timezone.
+  const TOURNAMENT_TZ = 'America/New_York'
+
+  // YYYY-MM-DD for a date in the given timezone (browser's own if omitted).
+  function dayKey(date: Date, timeZone?: string): string {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(date)
+  }
+
+  // state.json carries fixtures for a UTC day either side of now (wide enough
+  // to cover any tournament-local day); pick out the ones kicking off on
+  // "today" at the tournament. Recomputed every poll (data is reassigned each
+  // cycle), so the list rolls over at midnight.
   const todays = $derived.by(() => {
-    const now = new Date()
+    const today = dayKey(new Date(), TOURNAMENT_TZ)
     return matches
-      .filter((m) => {
-        const d = new Date(m.utc_date)
-        return (
-          d.getFullYear() === now.getFullYear() &&
-          d.getMonth() === now.getMonth() &&
-          d.getDate() === now.getDate()
-        )
-      })
+      .filter((m) => dayKey(new Date(m.utc_date), TOURNAMENT_TZ) === today)
       .sort((a, b) => a.utc_date.localeCompare(b.utc_date))
   })
 
   // Kickoff in the browser's timezone and locale, e.g. "17:00" or "5:00 PM".
   function kickoff(iso: string): string {
     return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }
+
+  // A tournament-day evening match can land on a different calendar day in the
+  // browser's timezone; flag it so the local kickoff time isn't misleading.
+  function dayNote(iso: string): string | null {
+    const matchDay = dayKey(new Date(iso))
+    const now = new Date()
+    if (matchDay === dayKey(now)) return null
+    const DAY_MS = 24 * 60 * 60 * 1000
+    if (matchDay === dayKey(new Date(now.getTime() + DAY_MS))) return 'tomorrow'
+    if (matchDay === dayKey(new Date(now.getTime() - DAY_MS))) return 'yesterday'
+    return new Date(iso).toLocaleDateString([], { weekday: 'short' })
   }
 
   type Badge = { text: string; kind: 'live' | 'ft' | 'note' } | null
@@ -62,10 +83,14 @@
       <div class="match-grid">
         {#each todays as m (m.id)}
           {@const b = badge(m.status)}
+          {@const note = dayNote(m.utc_date)}
           <article class="fixture" class:fixture-live={b?.kind === 'live'}>
             <div class="fixture-meta">
               <span class="fixture-group">{m.group}</span>
-              <span class="fixture-time">{kickoff(m.utc_date)}</span>
+              <span class="fixture-time">
+                {kickoff(m.utc_date)}{#if note}
+                  <span class="fixture-day-note">{note}</span>{/if}
+              </span>
               {#if b}
                 <span class="fixture-badge badge-{b.kind}">{b.text}</span>
               {/if}
@@ -137,6 +162,13 @@
 
   .fixture-time {
     margin-left: auto;
+  }
+
+  .fixture-day-note {
+    color: var(--wc-muted);
+    font-weight: 600;
+    margin-left: 0.3rem;
+    text-transform: none;
   }
 
   .fixture-badge {
